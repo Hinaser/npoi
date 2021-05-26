@@ -248,6 +248,7 @@
     <Compile Include="XSSF\UserModel\XSSFDataValidationConstraint.cs" />
     <Compile Include="XSSF\UserModel\XSSFDataValidationHelper.cs" />
     <Compile Include="XSSF\UserModel\XSSFDialogsheet.cs" />
+    <Compile Include="XSSF\UserModel\XSSFControl.cs" />
     <Compile Include="XSSF\UserModel\XSSFDrawing.cs" />
     <Compile Include="XSSF\UserModel\XSSFEvaluationCell.cs" />
     <Compile Include="XSSF\UserModel\XSSFEvaluationSheet.cs" />

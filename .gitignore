@@ -158,3 +158,8 @@ $RECYCLE.BIN/
 # Examples packages folder
 examples/packages
 examples/.vs/
+
+# Temporal line. Delete this before submitting PR.
+# testcases/test-data/spreadsheet/WithControl.xlsx
+# testcases/ooxml/XSSF/UserModel/TestXSSFControl.cs
+# testcases/test.dotnet.runsettings

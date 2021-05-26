@@ -91,6 +91,7 @@
     <Compile Include="Encryption\KeyEncryptorCertificate.cs" />
     <Compile Include="Encryption\KeyEncryptorPassword.cs" />
     <Compile Include="Shared\IOMathContainer.cs" />
+    <Compile Include="Spreadsheet\CT_ExtControl.cs" />
     <Compile Include="Spreadsheet\PivotTable\CT_PivotCacheRecords.cs" />
     <Compile Include="Drawing\ChartDrawing.cs" />
     <Compile Include="Drawing\Chart\ChartSpaceDocument.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Spreadsheet\PivotTable\CT_PivotCacheDefinition.cs" />
     <Compile Include="Spreadsheet\Document\ExternalLinkDocument.cs" />
     <Compile Include="Spreadsheet\PivotTable\CT_PivotTableDefinition.cs" />
+    <Compile Include="Spreadsheet\CT_ExtControlPr.cs" />
     <Compile Include="Spreadsheet\Styles\CT_Dxfs.cs" />
     <Compile Include="Spreadsheet\Sheet\CT_Table.cs" />
     <Compile Include="Spreadsheet\Styles\CT_TableStyles.cs" />

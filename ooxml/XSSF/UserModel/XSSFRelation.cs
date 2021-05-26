@@ -309,10 +309,10 @@ namespace NPOI.XSSF.UserModel
         );
 
         public static XSSFRelation CTRL_PROP_RECORDS = new XSSFRelation(
-            null,
+            "application/vnd.ms-excel.controlproperties+xml",
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/ctrlProp",
             "/xl/ctrlProps/ctrlProp#.xml",
-            null
+            typeof(XSSFControl)
         );
 
         public static String NS_SPREADSHEETML = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
