@@ -92,6 +92,8 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
 
         private CT_ExtensionList extLstField = null;
 
+        private CT_ExtControls extControlsField = null;
+
         public static CT_Worksheet Parse(XmlNode node, XmlNamespaceManager namespaceManager)
         {
             if (node == null)
@@ -178,6 +180,19 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
                     cols = childNode;
                 else if (childNode.LocalName == "conditionalFormatting")
                     ctObj.conditionalFormatting.Add(CT_ConditionalFormatting.Parse(childNode, namespaceManager));
+                else if (childNode.LocalName == "AlternateContent"
+                    && childNode.NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    && childNode.ChildNodes.Count > 0
+                    && childNode.ChildNodes[0].LocalName == "Choice"
+                    && childNode.ChildNodes[0].NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    && childNode.ChildNodes[0].ChildNodes.Count > 0
+                )
+                {
+                    if (childNode.ChildNodes[0].ChildNodes[0].LocalName == "controls")
+                    {
+                        ctObj.extControls = CT_ExtControls.Parse(childNode.ChildNodes[0].ChildNodes[0], namespaceManager);
+                    }
+                }
             }
 
             if (cols != null)
@@ -196,8 +211,11 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
             try
             {
                 sw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+                // fork: keep upstream's emission style, plus the x14 namespace required by
+                // the extended-control AlternateContent blocks (WithControl feature)
                 sw.Write("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"");
                 sw.Write(" xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\"");
+                sw.Write(" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\"");
                 sw.Write(" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14ac xr xr2 xr3\" xmlns:x14ac=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac\"");
                 sw.Write(" xmlns:xr=\"http://schemas.microsoft.com/office/spreadsheetml/2014/revision\" xmlns:xr2=\"http://schemas.microsoft.com/office/spreadsheetml/2015/revision2\" xmlns:xr3=\"http://schemas.microsoft.com/office/spreadsheetml/2016/revision3\"");
                 sw.Write('>');
@@ -287,6 +305,8 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
                     this.tableParts.Write(sw, "tableParts");
                 if (this.extLst != null)
                     this.extLst.Write(sw, "extLst");
+                if (this.extControls != null)
+                    this.extControls.Write(sw, "controls");
                 sw.Write("</worksheet>");
                 sw.Flush();
             }
@@ -1014,6 +1034,19 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
             set
             {
                 this.extLstField = value;
+            }
+        }
+
+        [XmlElement]
+        public CT_ExtControls extControls
+        {
+            get
+            {
+                return this.extControls;
+            }
+            set
+            {
+                this.extControls = value;
             }
         }
 
