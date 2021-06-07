@@ -2105,6 +2105,52 @@ namespace NPOI.XSSF.UserModel
             return drawing;
         }
 
+
+        // fork: extended form controls (WithControl feature)
+        public List<XSSFControl> GetXSSFControls()
+        {
+            CT_ExtControls ctExtControls = GetCTExtControls();
+            if(ctExtControls == null)
+            {
+                return null;
+            }
+
+            var controls = ctExtControls.controls;
+
+            var extControls = new List<XSSFControl>();
+            // Search the referenced Control in the list of the sheet's relations
+            foreach (RelationPart rp in RelationParts)
+            {
+                POIXMLDocumentPart p = rp.DocumentPart;
+                if (p is XSSFControl)
+                {
+                    bool controlFound = false;
+                    XSSFControl ctrl = (XSSFControl)p;
+                    String rId = rp.Relationship.Id;
+                    foreach(CT_ExtControl c in controls)
+                    {
+                        if (rId.Equals(c.id))
+                        {
+                            extControls.Add(ctrl);
+                            controlFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!controlFound)
+                    {
+                        logger.Log(POILogger.ERROR, "Can't find Control with id=" + rId + " in the list of the sheet's relationships");
+                    }
+                }
+            }
+            return extControls;
+        }
+
+        protected virtual CT_ExtControls GetCTExtControls()
+        {
+            return worksheet.extControls;
+        }
+
         /// <summary>
         /// Creates a split (freezepane). Any existing freezepane or split
         /// pane is overwritten.
