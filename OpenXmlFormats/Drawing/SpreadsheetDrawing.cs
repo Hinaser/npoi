@@ -1311,6 +1311,7 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
     {
         private List<IEG_Anchor> cellAnchors = new List<IEG_Anchor>();
         //private List<CT_AbsoulteCellAnchor> absoluteCellAnchors = new List<CT_AbsoulteCellAnchor>();
+        private List<IEG_Anchor> cellAnchorsExt = new List<IEG_Anchor>();
 
         public CT_TwoCellAnchor AddNewTwoCellAnchor()
         {
@@ -1331,15 +1332,45 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
             return count;
         }
 
+        public CT_TwoCellAnchor AddNewTwoCellAnchorExt()
+        {
+            CT_TwoCellAnchor anchor = new CT_TwoCellAnchor();
+            cellAnchorsExt.Add(anchor);
+            return anchor;
+        }
+        public int SizeOfTwoCellAnchorExtArray()
+        {
+            int count = 0;
+            foreach (IEG_Anchor anchor in cellAnchorsExt)
+            {
+                if (anchor is CT_TwoCellAnchor)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         public void Save(Stream stream)
         {
             using (StreamWriter sw = new StreamWriter(stream))
             {
                 sw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
-                sw.Write("<xdr:wsDr xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">");
+                sw.Write("<xdr:wsDr");
+                sw.Write(" xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\"");
+                sw.Write(" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"");
+                sw.Write(">");
                 foreach (IEG_Anchor anchor in this.cellAnchors)
                 {
                     anchor.Write(sw);
+                }
+                foreach(IEG_Anchor anchor in this.cellAnchorsExt)
+                {
+                    sw.Write("<mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">");
+                    sw.Write("<mc:Choice xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\" Requires=\"a14\">");
+                    anchor.Write(sw);
+                    sw.Write("</mc:Choice>");
+                    sw.Write("</mc:AlternateContent>");
                 }
                 sw.Write("</xdr:wsDr>");
             }
@@ -1406,6 +1437,21 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
                 {
                     CT_AbsoluteCellAnchor absCellAnchor = CT_AbsoluteCellAnchor.Parse(node, namespaceManager);
                     ctDrawing.cellAnchors.Add(absCellAnchor);
+                }
+                else if (node.LocalName == "AlternateContent"
+                    && node.NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    && node.ChildNodes.Count > 0
+                    && node.ChildNodes[0].LocalName == "Choice"
+                    && node.ChildNodes[0].NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    && node.ChildNodes[0].ChildNodes.Count > 0
+                )
+                {
+                    var node2 = node.ChildNodes[0].ChildNodes[0];
+                    if (node2.LocalName == "twoCellAnchor")
+                    {
+                        CT_TwoCellAnchor twoCellAnchor = CT_TwoCellAnchor.Parse(node2, namespaceManager);
+                        ctDrawing.cellAnchorsExt.Add(twoCellAnchor);
+                    }
                 }
             }
             return ctDrawing;
@@ -1870,7 +1916,7 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
                 }
                 else if (childNode.LocalName == "sp")
                 {
-                    twoCellAnchor.sp = CT_Shape.Parse(childNode, namespaceManager); ;
+                    twoCellAnchor.sp = CT_Shape.Parse(childNode, namespaceManager);
                 }
                 else if (childNode.LocalName == "pic")
                 {

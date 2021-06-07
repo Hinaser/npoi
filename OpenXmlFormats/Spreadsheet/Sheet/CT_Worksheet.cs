@@ -415,6 +415,14 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             this.legacyDrawingField = null;
         }
+        public bool IsSetExtControls()
+        {
+            return this.extControlsField != null;
+        }
+        public void UnsetExtControls()
+        {
+            this.extControlsField = null;
+        }
         public bool IsSetPageSetup()
         {
             return this.pageSetupField != null;
@@ -1016,11 +1024,11 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             get
             {
-                return this.extControls;
+                return this.extControlsField;
             }
             set
             {
-                this.extControls = value;
+                this.extControlsField = value;
             }
         }
 

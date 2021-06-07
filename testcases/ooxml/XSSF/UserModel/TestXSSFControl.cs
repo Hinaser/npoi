@@ -41,39 +41,43 @@ namespace TestCases.XSSF.UserModel
         {
             XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("WithControl.xlsx");
             XSSFSheet sheet = (XSSFSheet)wb.GetSheetAt(0);
-            //the sheet has one relationship and it is XSSFDrawing
+            
             List<POIXMLDocumentPart.RelationPart> rels = sheet.RelationParts;
-            Assert.AreEqual(1, rels.Count);
-            POIXMLDocumentPart.RelationPart rp = rels[0];
-            Assert.IsTrue(rp.DocumentPart is XSSFDrawing);
-
-            XSSFDrawing drawing = (XSSFDrawing)rp.DocumentPart;
-            //sheet.CreateDrawingPatriarch() should return the same instance of XSSFDrawing
-            Assert.AreSame(drawing, sheet.CreateDrawingPatriarch());
-            String drawingId = rp.Relationship.Id;
+            Assert.AreEqual(7, rels.Count);
 
             //there should be a relation to this Drawing in the worksheet
-            Assert.IsTrue(sheet.GetCTWorksheet().IsSetDrawing());
-            Assert.AreEqual(drawingId, sheet.GetCTWorksheet().drawing.id);
+            Assert.IsTrue(sheet.GetCTWorksheet().IsSetExtControls());
 
+            var controls = sheet.GetXSSFControls();
+            for (int i = 0; i < rels.Count; i++)
+            {
+                var rp = rels[i];
+                String rId = rp.Relationship.Id;
+                if (rId != "rId4" && rId != "rId5" && rId != "rId6" && rId != "rId7"){
+                    continue;
+                }
 
-            List<XSSFShape> shapes = drawing.GetShapes();
-            Assert.AreEqual(6, shapes.Count);
+                XSSFControl control = (XSSFControl)rp.DocumentPart;
 
-            Assert.IsTrue(shapes[(0)] is XSSFPicture);
-            Assert.IsTrue(shapes[(1)] is XSSFPicture);
-            Assert.IsTrue(shapes[(2)] is XSSFPicture);
-            Assert.IsTrue(shapes[(3)] is XSSFPicture);
-            Assert.IsTrue(shapes[(4)] is XSSFSimpleShape);
-            Assert.IsTrue(shapes[(5)] is XSSFPicture);
+                Assert.Contains(control, controls);
+                Assert.IsTrue(rp.DocumentPart is XSSFControl);
+                Assert.IsTrue(sheet.GetCTWorksheet().extControls.controls.Exists(c => c.id == rId));
 
-            foreach (XSSFShape sh in shapes)
-                Assert.IsNotNull(sh.GetAnchor());
+                if (rId == "rId4")
+                {
+                    Assert.AreEqual(control.FormControlPr.objectType, "CheckBox");
+                    control.FormControlPr.isChecked = "";
+                }
+                else if (rId == "rId5") Assert.AreEqual(control.FormControlPr.objectType, "Radio");
+                else if (rId == "rId6") Assert.AreEqual(control.FormControlPr.objectType, "Radio");
+                else if (rId == "rId7") Assert.AreEqual(control.FormControlPr.objectType, "Drop");
+            }
 
-            checkRewrite(wb);
+            CheckRewrite(wb);
             wb.Close();
         }
-        private static void checkRewrite(XSSFWorkbook wb)
+
+        private static void CheckRewrite(XSSFWorkbook wb)
         {
             XSSFWorkbook wb2 = XSSFTestDataSamples.WriteOutAndReadBack(wb);
             Assert.IsNotNull(wb2);

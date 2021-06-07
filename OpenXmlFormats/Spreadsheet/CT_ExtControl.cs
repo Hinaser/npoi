@@ -12,7 +12,6 @@
     [XmlType(Namespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main")]
     public class CT_ExtControl
     {
-
         private uint shapeIdField;
 
         private string idField;
@@ -104,17 +103,17 @@
     public class CT_ExtControls
     {
 
-        private List<CT_ExtControl> controlField;
+        private List<CT_ExtControl> controlsField;
 
-        public List<CT_ExtControl> control
+        public List<CT_ExtControl> controls
         {
             get
             {
-                return this.controlField;
+                return this.controlsField;
             }
             set
             {
-                this.controlField = value;
+                this.controlsField = value;
             }
         }
 
@@ -123,7 +122,7 @@
             if (node == null)
                 return null;
             CT_ExtControls ctObj = new CT_ExtControls();
-            ctObj.control = new List<CT_ExtControl>();
+            ctObj.controls = new List<CT_ExtControl>();
 
             foreach (XmlNode n in node)
             {
@@ -138,12 +137,12 @@
                     var cn2 = n.ChildNodes[0].ChildNodes[0];
                     if (cn2.LocalName == "control")
                     {
-                        ctObj.control.Add(CT_ExtControl.Parse(cn2, namespaceManager));
+                        ctObj.controls.Add(CT_ExtControl.Parse(cn2, namespaceManager));
                     }
                 }
                 else if(n.LocalName == "control")
                 {
-                    ctObj.control.Add(CT_ExtControl.Parse(n, namespaceManager));
+                    ctObj.controls.Add(CT_ExtControl.Parse(n, namespaceManager));
                 }
             }
 
@@ -155,13 +154,13 @@
             sw.Write("<mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">");
             sw.Write("<mc:Choice Requires=\"x14\">");
             sw.Write(string.Format("<{0}>", nodeName));
-            if (this.control != null)
+            if (this.controls != null)
             {
-                foreach (CT_ExtControl x in this.control)
+                foreach (CT_ExtControl control in this.controls)
                 {
                     sw.Write("<mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">");
                     sw.Write("<mc:Choice Requires=\"x14\">");
-                    x.Write(sw, "control");
+                    control.Write(sw, "control");
                     sw.Write("</mc:Choice>");
                     sw.Write("</mc:AlternateContent>");
                 }

@@ -28,7 +28,7 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             sw.Write(string.Format("<xdr:{0}>", nodeName));
             sw.Write(string.Format("{0}", this.col));
-            sw.Write(string.Format("</{0}>", nodeName));
+            sw.Write(string.Format("</xdr:{0}>", nodeName));
         }
     }
 
@@ -51,7 +51,7 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             sw.Write(string.Format("<xdr:{0}>", nodeName));
             sw.Write(string.Format("{0}", this.colOff));
-            sw.Write(string.Format("</{0}>", nodeName));
+            sw.Write(string.Format("</xdr:{0}>", nodeName));
         }
     }
 
@@ -74,7 +74,7 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             sw.Write(string.Format("<xdr:{0}>", nodeName));
             sw.Write(string.Format("{0}", this.row));
-            sw.Write(string.Format("</{0}>", nodeName));
+            sw.Write(string.Format("</xdr:{0}>", nodeName));
         }
     }
 
@@ -97,7 +97,7 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
         {
             sw.Write(string.Format("<xdr:{0}>", nodeName));
             sw.Write(string.Format("{0}", this.rowOff));
-            sw.Write(string.Format("</{0}>", nodeName));
+            sw.Write(string.Format("</xdr:{0}>", nodeName));
         }
     }
 
