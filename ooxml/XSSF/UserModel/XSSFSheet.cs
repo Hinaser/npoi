@@ -633,7 +633,7 @@ namespace NPOI.XSSF.UserModel
             return worksheet.legacyDrawing;
         }
 
-        public List<Tuple<CT_ExtControl, XSSFControl>> GetExtControls()
+        public List<Tuple<CT_ExtControl, XSSFControl>> GetExtControls(string objectType = "")
         {
             CT_ExtControls ctExtControls = GetCTExtControls();
             if(ctExtControls == null)
@@ -652,6 +652,15 @@ namespace NPOI.XSSF.UserModel
                 {
                     bool controlFound = false;
                     XSSFControl ctrl = (XSSFControl)p;
+
+                    if (!String.IsNullOrEmpty(objectType))
+                    {
+                        if(ctrl.FormControlPr.objectType != objectType)
+                        {
+                            continue;
+                        }
+                    }
+
                     String rId = rp.Relationship.Id;
                     foreach(CT_ExtControl c in controls)
                     {
@@ -675,6 +684,11 @@ namespace NPOI.XSSF.UserModel
         protected virtual CT_ExtControls GetCTExtControls()
         {
             return worksheet.extControls;
+        }
+
+        public List<Tuple<CT_ExtControl, XSSFControl>> GetGroupBoxes()
+        {
+            return GetExtControls("GBox");
         }
 
         /**
