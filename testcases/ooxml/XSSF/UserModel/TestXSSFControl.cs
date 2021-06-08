@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using System;
+using System.IO;
 using NPOI.OpenXml4Net.OPC;
 using NPOI.SS.UserModel;
 using NPOI.OpenXmlFormats.Dml;
@@ -74,6 +75,7 @@ namespace TestCases.XSSF.UserModel
             }
 
             CheckRewrite(wb);
+            // WriteToFile(wb);
             wb.Close();
         }
 
@@ -82,6 +84,14 @@ namespace TestCases.XSSF.UserModel
             XSSFWorkbook wb2 = XSSFTestDataSamples.WriteOutAndReadBack(wb);
             Assert.IsNotNull(wb2);
             wb2.Close();
+        }
+
+        private static void WriteToFile(XSSFWorkbook wb)
+        {
+            using (var fs = File.Create(@"C:\Users\Hinaser\Desktop\aaa.xlsx"))
+            {
+                wb.Write(fs);
+            }
         }
     }
 }
