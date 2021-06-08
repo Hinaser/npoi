@@ -49,7 +49,10 @@ namespace TestCases.XSSF.UserModel
             //there should be a relation to this Drawing in the worksheet
             Assert.IsTrue(sheet.GetCTWorksheet().IsSetExtControls());
 
-            var controls = sheet.GetXSSFControls();
+            var controls = sheet.GetExtControls();
+            var ctControls = controls.ConvertAll(c => c.Item1);
+            var xssfControls = controls.ConvertAll(c => c.Item2);
+
             for (int i = 0; i < rels.Count; i++)
             {
                 var rp = rels[i];
@@ -60,15 +63,11 @@ namespace TestCases.XSSF.UserModel
 
                 XSSFControl control = (XSSFControl)rp.DocumentPart;
 
-                Assert.Contains(control, controls);
+                Assert.Contains(control, xssfControls);
                 Assert.IsTrue(rp.DocumentPart is XSSFControl);
-                Assert.IsTrue(sheet.GetCTWorksheet().extControls.controls.Exists(c => c.id == rId));
+                Assert.IsTrue(ctControls.Exists(c => c.id == rId));
 
-                if (rId == "rId4")
-                {
-                    Assert.AreEqual(control.FormControlPr.objectType, "CheckBox");
-                    control.FormControlPr.isChecked = "";
-                }
+                if (rId == "rId4") Assert.AreEqual(control.FormControlPr.objectType, "CheckBox");
                 else if (rId == "rId5") Assert.AreEqual(control.FormControlPr.objectType, "Radio");
                 else if (rId == "rId6") Assert.AreEqual(control.FormControlPr.objectType, "Radio");
                 else if (rId == "rId7") Assert.AreEqual(control.FormControlPr.objectType, "Drop");

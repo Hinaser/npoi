@@ -633,7 +633,7 @@ namespace NPOI.XSSF.UserModel
             return worksheet.legacyDrawing;
         }
 
-        public List<XSSFControl> GetXSSFControls()
+        public List<Tuple<CT_ExtControl, XSSFControl>> GetExtControls()
         {
             CT_ExtControls ctExtControls = GetCTExtControls();
             if(ctExtControls == null)
@@ -643,7 +643,7 @@ namespace NPOI.XSSF.UserModel
 
             var controls = ctExtControls.controls;
 
-            var extControls = new List<XSSFControl>();
+            var pairs = new List<Tuple<CT_ExtControl, XSSFControl>>();
             // Search the referenced Control in the list of the sheet's relations
             foreach (RelationPart rp in RelationParts)
             {
@@ -657,7 +657,7 @@ namespace NPOI.XSSF.UserModel
                     {
                         if (rId.Equals(c.id))
                         {
-                            extControls.Add(ctrl);
+                            pairs.Add(new Tuple<CT_ExtControl, XSSFControl>(c, ctrl));
                             controlFound = true;
                             break;
                         }
@@ -669,7 +669,7 @@ namespace NPOI.XSSF.UserModel
                     }
                 }
             }
-            return extControls;
+            return pairs;
         }
 
         protected virtual CT_ExtControls GetCTExtControls()
