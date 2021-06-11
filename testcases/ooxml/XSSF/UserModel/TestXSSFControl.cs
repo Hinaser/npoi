@@ -44,7 +44,7 @@ namespace TestCases.XSSF.UserModel
             XSSFSheet sheet = (XSSFSheet)wb.GetSheetAt(0);
             
             List<POIXMLDocumentPart.RelationPart> rels = sheet.RelationParts;
-            Assert.AreEqual(7, rels.Count);
+            Assert.AreEqual(10, rels.Count);
 
             //there should be a relation to this Drawing in the worksheet
             Assert.IsTrue(sheet.GetCTWorksheet().IsSetExtControls());

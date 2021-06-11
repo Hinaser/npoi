@@ -691,6 +691,73 @@ namespace NPOI.XSSF.UserModel
             return GetExtControls("GBox");
         }
 
+        public void ResetControlState()
+        {
+            var extControls = GetExtControls();
+            if(extControls == null)
+            {
+                return;
+            }
+
+            var groupBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "GBox").ToList();
+            var radioBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "Radio").ToList();
+            var checkBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "CheckBox").ToList();
+            // var dropLists = extControls.Where(c => c.Item2.FormControlPr.objectType == "Drop").ToList();
+
+            foreach(var gb in groupBoxes)
+            {
+                var radios = GetRadioForGroup(gb, radioBoxes);
+                var fmlaLink = "";
+                foreach(var r in radios)
+                {
+                    if (!String.IsNullOrEmpty(r.Item2.FormControlPr.fmlaLink))
+                    {
+                        fmlaLink = r.Item2.FormControlPr.fmlaLink;
+                    }
+                }
+
+                if (String.IsNullOrEmpty(fmlaLink))
+                {
+                    continue;
+                }
+
+                var cell = GetLikedCellForControl(fmlaLink);
+                int a = 0;
+            }
+        }
+
+        public List<Tuple<CT_ExtControl, XSSFControl>> GetRadioForGroup(
+            Tuple<CT_ExtControl, XSSFControl> groupBox,
+            List<Tuple<CT_ExtControl, XSSFControl>> controls
+        ) {
+            var groupAnchor = groupBox.Item1.controlPr.anchor;
+            var rowStart = groupAnchor.from.row.row;
+            var rowEnd = groupAnchor.to.row.row;
+            var colStart = groupAnchor.from.col.col;
+            var colEnd = groupAnchor.to.col.col;
+
+            return controls.Where(c => 
+                rowStart <= c.Item1.controlPr.anchor.from.row.row
+                && c.Item1.controlPr.anchor.to.row.row <= rowEnd
+                && colStart <= c.Item1.controlPr.anchor.from.col.col
+                && c.Item1.controlPr.anchor.to.col.col <= colEnd
+            ).ToList();
+        }
+
+        public ICell GetLikedCellForControl(string fmlaLink)
+        {
+            try
+            {
+                var cr = new CellReference(fmlaLink);
+                var row = GetRow(cr.Row);
+                return row.GetCell(cr.Col);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         /**
          * Creates a split (freezepane). Any existing freezepane or split pane is overwritten.
          * @param colSplit      Horizonatal position of split.
@@ -3861,6 +3928,11 @@ namespace NPOI.XSSF.UserModel
             Dictionary<String, String> map = new Dictionary<String, String>();
             map[ST_RelationshipId.NamespaceURI] = "r";
             //xmlOptions.SetSaveSuggestedPrefixes(map);
+
+            /*
+             * Reset extControl state according to linked cell value.
+             */
+            ResetControlState();
 
             new WorksheetDocument(worksheet).Save(stream);
 
