@@ -151,7 +151,7 @@ namespace NPOI.XSSF.UserModel
         {
             using (StreamWriter sw = new StreamWriter(stream))
             {
-                sw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+                sw.Write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n");
 
                 sw.Write(string.Format("<{0}", "formControlPr"));
                 sw.Write(" xmlns=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\"");
