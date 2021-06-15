@@ -686,30 +686,41 @@ namespace NPOI.XSSF.UserModel
             return worksheet.extControls;
         }
 
-        public List<Tuple<CT_ExtControl, XSSFControl>> GetGroupBoxes()
-        {
-            return GetExtControls("GBox");
-        }
-
         public void ResetControlState()
         {
+            ResetRadioState();
+            ResetCheckboxState();
+        }
+
+        public void ResetRadioState()
+        {
             var extControls = GetExtControls();
-            if(extControls == null)
+            if (extControls == null)
             {
                 return;
             }
 
-            var groupBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "GBox").ToList();
-            var radioBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "Radio").ToList();
-            var checkBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType == "CheckBox").ToList();
+            var groupBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType.ToLower() == "gbox").ToList();
+            var radioBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType.ToLower() == "radio").ToList();
             // var dropLists = extControls.Where(c => c.Item2.FormControlPr.objectType == "Drop").ToList();
 
-            foreach(var gb in groupBoxes)
+            var groupedRadioBoxes = new List<Tuple<CT_ExtControl, XSSFControl>>();
+            foreach (var gb in groupBoxes)
             {
-                var radios = GetRadioForGroup(gb, radioBoxes);
+                var radios = GetRadioForGroup(extControls, gb);
+                groupedRadioBoxes.AddRange(radios);
+            }
+            var nonGroupedRadioBoxes = radioBoxes.Where(c => !groupedRadioBoxes.Contains(c)).ToList();
+
+            for (int i=-1;i<groupBoxes.Count;i++)
+            {
+                var gb = i == -1 ? null : groupBoxes[i];
+                var radios = i == -1 ? nonGroupedRadioBoxes : GetRadioForGroup(extControls, gb);
+
                 var fmlaLink = "";
-                foreach(var r in radios)
+                foreach (var r in radios)
                 {
+                    r.Item2.FormControlPr.isChecked = "";
                     if (!String.IsNullOrEmpty(r.Item2.FormControlPr.fmlaLink))
                     {
                         fmlaLink = r.Item2.FormControlPr.fmlaLink;
@@ -721,23 +732,77 @@ namespace NPOI.XSSF.UserModel
                     continue;
                 }
 
+                int selectedIndex = 0;
                 var cell = GetLikedCellForControl(fmlaLink);
-                int a = 0;
+                if (cell.CellType == CellType.Numeric)
+                {
+                    selectedIndex = (int)cell.NumericCellValue;
+                }
+                else if (cell.CellType == CellType.String)
+                {
+                    int.TryParse(cell.StringCellValue, out selectedIndex);
+                }
+                else if (cell.CellType == CellType.Boolean)
+                {
+                    selectedIndex = cell.BooleanCellValue ? 1 : 0;
+                }
+                // For now, no support for CellType.Formula
+
+                if (selectedIndex > 0 && radios.Count >= selectedIndex)
+                {
+                    radios[selectedIndex - 1].Item2.FormControlPr.isChecked = "Checked";
+                }
+            }
+        }
+
+        public void ResetCheckboxState()
+        {
+            var extControls = GetExtControls();
+            if (extControls == null)
+            {
+                return;
+            }
+
+            var checkBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType.ToLower() == "checkbox").ToList();
+            foreach(var cb in checkBoxes)
+            {
+                var fmlaLink = cb.Item2.FormControlPr.fmlaLink;
+
+                bool isChecked = false;
+                var cell = GetLikedCellForControl(fmlaLink);
+                if (cell.CellType == CellType.Numeric)
+                {
+                    isChecked = ((int)cell.NumericCellValue) > 0;
+                }
+                else if (cell.CellType == CellType.String)
+                {
+                    int.TryParse(cell.StringCellValue, out int v);
+                    isChecked = v > 0;
+                }
+                else if (cell.CellType == CellType.Boolean)
+                {
+                    isChecked = cell.BooleanCellValue ;
+                }
+                // For now, no support for CellType.Formula
+
+                cb.Item2.FormControlPr.isChecked = isChecked ? "Checked" : "";
             }
         }
 
         public List<Tuple<CT_ExtControl, XSSFControl>> GetRadioForGroup(
-            Tuple<CT_ExtControl, XSSFControl> groupBox,
-            List<Tuple<CT_ExtControl, XSSFControl>> controls
-        ) {
+            List<Tuple<CT_ExtControl, XSSFControl>> allControls,
+            Tuple<CT_ExtControl, XSSFControl> groupBox
+        )
+        {
             var groupAnchor = groupBox.Item1.controlPr.anchor;
             var rowStart = groupAnchor.from.row.row;
             var rowEnd = groupAnchor.to.row.row;
             var colStart = groupAnchor.from.col.col;
             var colEnd = groupAnchor.to.col.col;
 
-            return controls.Where(c => 
-                rowStart <= c.Item1.controlPr.anchor.from.row.row
+            return allControls.Where(c =>
+                c.Item2.FormControlPr.objectType == "Radio"
+                && rowStart <= c.Item1.controlPr.anchor.from.row.row
                 && c.Item1.controlPr.anchor.to.row.row <= rowEnd
                 && colStart <= c.Item1.controlPr.anchor.from.col.col
                 && c.Item1.controlPr.anchor.to.col.col <= colEnd
