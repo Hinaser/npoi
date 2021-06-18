@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using NPOI.HSSF.Record;
 using NPOI.OpenXml4Net.Exceptions;
@@ -633,7 +634,7 @@ namespace NPOI.XSSF.UserModel
             return worksheet.legacyDrawing;
         }
 
-        public List<Tuple<CT_ExtControl, XSSFControl>> GetExtControls(string objectType = "")
+        public List<Tuple<CT_ExtControl, XSSFControl, int>> GetExtControls(string objectType = "")
         {
             CT_ExtControls ctExtControls = GetCTExtControls();
             if(ctExtControls == null)
@@ -643,7 +644,7 @@ namespace NPOI.XSSF.UserModel
 
             var controls = ctExtControls.controls;
 
-            var pairs = new List<Tuple<CT_ExtControl, XSSFControl>>();
+            var trios = new List<Tuple<CT_ExtControl, XSSFControl, int>>();
             // Search the referenced Control in the list of the sheet's relations
             foreach (RelationPart rp in RelationParts)
             {
@@ -666,7 +667,9 @@ namespace NPOI.XSSF.UserModel
                     {
                         if (rId.Equals(c.id))
                         {
-                            pairs.Add(new Tuple<CT_ExtControl, XSSFControl>(c, ctrl));
+                            var regex = new Regex("^rId", RegexOptions.IgnoreCase);
+                            int.TryParse(regex.Replace(rId, ""), out int n_rId);
+                            trios.Add(new Tuple<CT_ExtControl, XSSFControl, int>(c, ctrl, n_rId));
                             controlFound = true;
                             break;
                         }
@@ -678,7 +681,11 @@ namespace NPOI.XSSF.UserModel
                     }
                 }
             }
-            return pairs;
+
+            // Sort by rId
+            trios = trios.OrderBy(t => t.Item3).ToList();
+
+            return trios;
         }
 
         protected virtual CT_ExtControls GetCTExtControls()
@@ -690,6 +697,7 @@ namespace NPOI.XSSF.UserModel
         {
             ResetRadioState();
             ResetCheckboxState();
+            ResetDropListState();
         }
 
         public void ResetRadioState()
@@ -704,7 +712,7 @@ namespace NPOI.XSSF.UserModel
             var radioBoxes = extControls.Where(c => c.Item2.FormControlPr.objectType.ToLower() == "radio").ToList();
             // var dropLists = extControls.Where(c => c.Item2.FormControlPr.objectType == "Drop").ToList();
 
-            var groupedRadioBoxes = new List<Tuple<CT_ExtControl, XSSFControl>>();
+            var groupedRadioBoxes = new List<Tuple<CT_ExtControl, XSSFControl, int>>();
             foreach (var gb in groupBoxes)
             {
                 var radios = GetRadioForGroup(extControls, gb);
@@ -789,9 +797,45 @@ namespace NPOI.XSSF.UserModel
             }
         }
 
-        public List<Tuple<CT_ExtControl, XSSFControl>> GetRadioForGroup(
-            List<Tuple<CT_ExtControl, XSSFControl>> allControls,
-            Tuple<CT_ExtControl, XSSFControl> groupBox
+        public void ResetDropListState()
+        {
+            var extControls = GetExtControls();
+            if (extControls == null)
+            {
+                return;
+            }
+
+            var droplists = extControls.Where(c => c.Item2.FormControlPr.objectType.ToLower() == "drop").ToList();
+            foreach (var dl in droplists)
+            {
+                var fmlaLink = dl.Item2.FormControlPr.fmlaLink;
+
+                int sel = -1;
+                var cell = GetLikedCellForControl(fmlaLink);
+                if (cell.CellType == CellType.Numeric)
+                {
+                    sel = ((int)cell.NumericCellValue);
+                }
+                else if (cell.CellType == CellType.String)
+                {
+                    int.TryParse(cell.StringCellValue, out sel);
+                }
+                else if (cell.CellType == CellType.Boolean)
+                {
+                    sel = cell.BooleanCellValue ? 1 : 0;
+                }
+                // For now, no support for CellType.Formula
+
+                if(sel > -1)
+                {
+                    dl.Item2.FormControlPr.sel = sel.ToString();
+                }
+            }
+        }
+
+        public List<Tuple<CT_ExtControl, XSSFControl, int>> GetRadioForGroup(
+            List<Tuple<CT_ExtControl, XSSFControl, int>> allControls,
+            Tuple<CT_ExtControl, XSSFControl, int> groupBox
         )
         {
             var groupAnchor = groupBox.Item1.controlPr.anchor;
@@ -806,7 +850,7 @@ namespace NPOI.XSSF.UserModel
                 && c.Item1.controlPr.anchor.to.row.row <= rowEnd
                 && colStart <= c.Item1.controlPr.anchor.from.col.col
                 && c.Item1.controlPr.anchor.to.col.col <= colEnd
-            ).ToList();
+            ).OrderBy(c => c.Item3).ToList();
         }
 
         public ICell GetLikedCellForControl(string fmlaLink)
@@ -3983,6 +4027,9 @@ namespace NPOI.XSSF.UserModel
                 worksheet.hyperlinks.SetHyperlinkArray(ctHls);
             }
 
+            // Reset extControl state according to linked cell value.
+            ResetControlState();
+
             foreach (XSSFRow row in _rows.Values)
             {
                 row.OnDocumentWrite();
@@ -3993,11 +4040,6 @@ namespace NPOI.XSSF.UserModel
             Dictionary<String, String> map = new Dictionary<String, String>();
             map[ST_RelationshipId.NamespaceURI] = "r";
             //xmlOptions.SetSaveSuggestedPrefixes(map);
-
-            /*
-             * Reset extControl state according to linked cell value.
-             */
-            ResetControlState();
 
             new WorksheetDocument(worksheet).Save(stream);
 
