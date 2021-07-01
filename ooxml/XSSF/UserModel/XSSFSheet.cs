@@ -2219,6 +2219,10 @@ namespace NPOI.XSSF.UserModel
 
                 int selectedIndex = 0;
                 var cell = GetLikedCellForControl(fmlaLink);
+                if(cell == null)
+                {
+                    continue;
+                }
                 if (cell.CellType == CellType.Numeric)
                 {
                     selectedIndex = (int)cell.NumericCellValue;
@@ -2255,14 +2259,21 @@ namespace NPOI.XSSF.UserModel
 
                 bool isChecked = false;
                 var cell = GetLikedCellForControl(fmlaLink);
+                if(cell == null)
+                {
+                    continue;
+                }
+
                 if (cell.CellType == CellType.Numeric)
                 {
-                    isChecked = ((int)cell.NumericCellValue) > 0;
+                    isChecked = ((int)cell.NumericCellValue) != 0;
                 }
-                else if (cell.CellType == CellType.String)
+                else if (cell.CellType == CellType.String && !String.IsNullOrEmpty(cell.StringCellValue))
                 {
-                    int.TryParse(cell.StringCellValue, out int v);
-                    isChecked = v > 0;
+                    if(int.TryParse(cell.StringCellValue, out int v))
+                    {
+                        isChecked = v != 0;
+                    }
                 }
                 else if (cell.CellType == CellType.Boolean)
                 {
@@ -2289,6 +2300,10 @@ namespace NPOI.XSSF.UserModel
 
                 int sel = -1;
                 var cell = GetLikedCellForControl(fmlaLink);
+                if(cell == null)
+                {
+                    continue;
+                }
                 if (cell.CellType == CellType.Numeric)
                 {
                     sel = ((int)cell.NumericCellValue);
