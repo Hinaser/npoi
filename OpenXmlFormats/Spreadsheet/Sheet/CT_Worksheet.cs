@@ -298,10 +298,10 @@ namespace NPOI.OpenXmlFormats.Spreadsheet
                     this.webPublishItems.Write(sw, "webPublishItems");
                 if (this.tableParts != null)
                     this.tableParts.Write(sw, "tableParts");
-                if (this.extLst != null)
-                    this.extLst.Write(sw, "extLst");
                 if (this.extControls != null)
                     this.extControls.Write(sw, "controls");
+                if (this.extLst != null)
+                    this.extLst.Write(sw, "extLst");
                 sw.Write("</worksheet>");
             }
         }
