@@ -26,6 +26,7 @@ namespace NPOI.XWPF.UserModel
     using NPOI.XWPF.Model;
     using System.Xml.Serialization;
     using System.Diagnostics;
+    using NPOI.OOXML.XWPF.Util;
 
     /**
      * <p>High(ish) level class for working with .docx files.</p>
@@ -47,7 +48,7 @@ namespace NPOI.XWPF.UserModel
         /**
          * Keeps track on all id-values used in this document and included parts, like headers, footers, etc.
          */
-        private IdentifierManager drawingIdManager = new IdentifierManager(1L, 4294967295L);
+        private IdentifierManager drawingIdManager = new IdentifierManager(0L, 4294967295L);
         protected List<XWPFFooter> footers = new List<XWPFFooter>();
         protected List<XWPFHeader> headers = new List<XWPFHeader>();
         protected List<XWPFComment> comments = new List<XWPFComment>();
@@ -231,7 +232,7 @@ namespace NPOI.XWPF.UserModel
                   this.footnotes = (XWPFFootnotes)p;
                   this.footnotes.OnDocumentRead();
                }
-               else if (relation.Equals(XWPFRelation.ENDNOTE.Relation))
+               if (relation.Equals(XWPFRelation.ENDNOTE.Relation))
                {
                    XmlDocument xmldoc = ConvertStreamToXml(p.GetPackagePart().GetInputStream());
                    EndnotesDocument endnotesDocument = EndnotesDocument.Parse(xmldoc, NamespaceManager);
@@ -1047,29 +1048,22 @@ namespace NPOI.XWPF.UserModel
             return table;
         }
 
-        /**
-         * 
-         */
+        /// <summary>
+        /// Create a Table of Contents (TOC) at the end of the document.
+        /// Please set paragraphs style to "Heading{#}" and document
+        /// styles for TOC <see cref="DocumentStylesBuilder.BuildStylesForTOC"/>.
+        /// Otherwise, it renders an empty one.
+        /// </summary>
         public void CreateTOC()
         {
-            CT_SdtBlock block = this.Document.body.AddNewSdt();
-            TOC toc = new TOC(block);
-            foreach (XWPFParagraph par in paragraphs)
-            {
-                String parStyle = par.Style;
-                if (parStyle != null && parStyle.StartsWith("Heading"))
-                {
-                    try
-                    {
-                        int level = Int32.Parse(parStyle.Substring("Heading".Length));
-                        toc.AddRow(level, par.Text, 1, "112723803");
-                    }
-                    catch (FormatException e)
-                    {
-                        Debug.Write(e.StackTrace);
-                    }
-                }
-            }
+            var ctStyles = DocumentStylesBuilder.BuildStylesForTOC();
+            styles.SetStyles(ctStyles);
+
+            CT_SdtBlock tocBlock = Document.body.AddNewSdt();
+            TOC toc = new TOC(tocBlock);
+            toc.Build();
+
+            EnforceUpdateFields(); // one time pop-up to update TOC when opening document
         }
 
         /**Replace content of table in array tables at position pos with a
@@ -1545,7 +1539,36 @@ namespace NPOI.XWPF.UserModel
         {
             return tables.GetEnumerator();
         }
-
+        /// <summary>
+        /// Change orientation of a Word file
+        /// </summary>
+        /// <param name="orientation"></param>
+        /// <remarks>https://stackoverflow.com/questions/26483837/landscape-and-portrait-pages-in-the-same-word-document-using-apache-poi-xwpf-in</remarks>
+        public void ChangeOrientation(ST_PageOrientation orientation)
+        {
+            var body = this.Document.body;
+            if (body.sectPr == null)
+            {
+                body.AddNewSectPr();
+            }
+            var section = body.sectPr;
+            XWPFParagraph para = this.CreateParagraph();
+            var ctp = para.GetCTP();
+            var br = ctp.AddNewPPr();
+            br.sectPr = section;
+            var pageSize = section.pgSz;
+            pageSize.orient = orientation;
+            if (orientation== ST_PageOrientation.landscape)
+            {
+                pageSize.w = 842 * 20;
+                pageSize.h = 595 * 20;
+            }
+            else
+            {
+                pageSize.h = 842 * 20;
+                pageSize.w = 595 * 20;
+            }
+        }
         public IEnumerator<XWPFParagraph> GetParagraphsEnumerator()
         {
             return paragraphs.GetEnumerator();

@@ -1,9 +1,11 @@
 NPOI
 ===================
-[![NuGet Version](https://img.shields.io/nuget/v/NPOI.svg?style=flat)](https://www.nuget.org/packages/NPOI/)
-[![NuGet](https://img.shields.io/nuget/dt/NPOI.svg)](https://www.nuget.org/packages/NPOI) 
+[![NuGet Badge](https://buildstats.info/nuget/NPOI)](https://www.nuget.org/packages/NPOI)
+[![Ko-Fi](https://img.shields.io/static/v1?style=flat-square&message=Support%20the%20Project&color=success&style=plastic&logo=ko-fi&label=$$)](https://ko-fi.com/tonyqus)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=Apache)](License.md)
 [![Badge](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu/#/en_US)
-[![Analytics](https://ga-beacon.appspot.com/UA-39118634-1/readme)](https://github.com/tonyqus/npoi)
+[![traffic](https://api.segment.io/v1/pixel/track?data=ewogICJ3cml0ZUtleSI6ICJBV2NjaWd1UkhKODBuNkJ4WlI4cHRaRzBINzY0RmJObCIsCiAgInVzZXJJZCI6ICJ0b255cXVzIiwKICAiZXZlbnQiOiAiTlBPSSBIb21lcGFnZSIKfQ==
+)](#)
 <br />
 This project is the .NET version of POI Java project. With NPOI, you can read/write Office 2003/2007 files very easily.<br />
 
@@ -13,15 +15,17 @@ Get Started with NPOI
 
 [How to use NPOI on Linux](https://github.com/nissl-lab/npoi/wiki/How-to-use-NPOI-on-Linux)
 
+[ORM on NPOI](https://github.com/nissl-lab/npoi/wiki/ORM-on-NPOI)
+
 [Stop using Dotnetcore/NPOI nuget package. It’s obsolete!](https://tonyqus.medium.com/stop-using-dotnetcore-npoi-nuget-package-its-too-obsolete-6d0aeedb3319)
 
-Contributors
-============
-Big thanks to all [NPOI contributors](https://github.com/nissl-lab/npoi/wiki/NPOI-Contributors)!!! 
+[中国哪些公司在用.NET](https://github.com/dotnet-cn/jobs)
 
-Donation
-=========
-If this project help you reduce time to develop, you can give me a cup of beer 🍺 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/tonyqus/10)
+[DotnetCore.NPOI的前世今生](https://github.com/nissl-lab/npoi/wiki/DotNetCore.NPOI的前世今生)
+
+[起底开源邪教NCC组织](https://github.com/nissl-lab/npoi/wiki/起底开源邪教NCC组织)
+
+[NPOI Changelog](https://github.com/nissl-lab/npoi/wiki/Changelog)
 
 Telegram User Group
 ================
@@ -50,6 +54,8 @@ h. Works on both Windows and Linux
 
 System Requirement
 ===================
-.NET Standard 2.0 (.NET Core)
+.NET Standard 2.1 (.NET Core 3.x)
+
+.NET Standard 2.0 (.NET Core 2.x)
 
 .NET Framework 4.0 and above

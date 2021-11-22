@@ -1406,8 +1406,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
         {
             sw.Write(string.Format("<c:{0}", nodeName));
             XmlHelper.WriteAttribute(sw, "val", this.val, true);
-            sw.Write(">");
-            sw.Write(string.Format("</c:{0}>", nodeName));
+            sw.Write("/>");
         }
 
     }
@@ -2342,8 +2341,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
         {
             sw.Write(string.Format("<c:{0}", nodeName));
             XmlHelper.WriteAttribute(sw, "val", this.val);
-            sw.Write(">");
-            sw.Write(string.Format("</c:{0}>", nodeName));
+            sw.Write("/>");
         }
 
         [XmlAttribute]
@@ -2979,8 +2977,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
 
         internal void Write(StreamWriter sw, string nodeName)
         {
-            sw.Write(string.Format("<c:{0}", nodeName));
-            sw.Write(">");
+            sw.Write(string.Format("<c:{0}>", nodeName));
             if (this.logBase != null)
                 this.logBase.Write(sw, "logBase");
             if (this.orientation != null)
@@ -3125,8 +3122,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
         {
             sw.Write(string.Format("<c:{0}", nodeName));
             XmlHelper.WriteAttribute(sw, "val", this.val);
-            sw.Write(">");
-            sw.Write(string.Format("</c:{0}>", nodeName));
+            sw.Write("/>");
         }
 
         private double valField;
@@ -3176,8 +3172,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
         {
             sw.Write(string.Format("<c:{0}", nodeName));
             XmlHelper.WriteAttribute(sw, "val", this.val.ToString());
-            sw.Write(">");
-            sw.Write(string.Format("</c:{0}>", nodeName));
+            sw.Write("/>");
         }
 
         [XmlAttribute]
@@ -4948,8 +4943,6 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
 
         private CT_UnsignedInt crossAxField;
 
-        //private object itemField;
-
         private CT_Boolean autoField;
 
         private CT_LblAlgn lblAlgnField;
@@ -5029,8 +5022,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
 
         internal void Write(StreamWriter sw, string nodeName)
         {
-            sw.Write(string.Format("<c:{0}", nodeName));
-            sw.Write(">");
+            sw.Write(string.Format("<c:{0}>", nodeName));
             if (this.axId != null)
                 this.axId.Write(sw, "axId");
             if (this.scaling != null)
@@ -5433,6 +5425,16 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
             return this.majorTickMarkField;
         }
 
+        public CT_ChartLines AddNewMajorGridlines()
+        {
+            this.majorGridlinesField = new CT_ChartLines();
+            return this.majorGridlinesField;
+        }
+        public CT_ChartLines AddNewMinorGridlines()
+        {
+            this.minorGridlinesField = new CT_ChartLines();
+            return this.minorGridlinesField;
+        }
         public CT_TickMark AddNewMinorTickMark()
         {
             this.minorTickMarkField = new CT_TickMark();
@@ -5854,8 +5856,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
 
         internal void Write(StreamWriter sw, string nodeName)
         {
-            sw.Write(string.Format("<c:{0}", nodeName));
-            sw.Write(">");
+            sw.Write(string.Format("<c:{0}>", nodeName));
             if (this.axId != null)
                 this.axId.Write(sw, "axId");
             if (this.scaling != null)
@@ -6235,11 +6236,20 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
             this.majorTickMarkField = new CT_TickMark();
             return this.majorTickMarkField;
         }
-
         public CT_TickMark AddNewMinorTickMark()
         {
             this.minorTickMarkField = new CT_TickMark();
             return this.minorTickMarkField;
+        }
+        public CT_ChartLines AddNewMajorGridlines()
+        {
+            this.majorGridlinesField = new CT_ChartLines();
+            return this.majorGridlinesField;
+        }
+        public CT_ChartLines AddNewMinorGridlines()
+        {
+            this.minorGridlinesField = new CT_ChartLines();
+            return this.minorGridlinesField;
         }
     }
 
@@ -10140,8 +10150,7 @@ namespace NPOI.OpenXmlFormats.Dml.Chart
 
         internal void Write(StreamWriter sw, string nodeName)
         {
-            sw.Write(string.Format("<c:{0}", nodeName));
-            sw.Write(">");
+            sw.Write(string.Format("<c:{0}>", nodeName));
             if (this.layout != null)
                 this.layout.Write(sw, "layout");
             if (this.dTable != null)

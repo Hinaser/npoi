@@ -276,7 +276,7 @@ namespace NPOI.XSSF.UserModel
          * @return the CT_Worksheet bean holding this sheet's data
          */
 
-        internal CT_Worksheet GetCTWorksheet()
+        public CT_Worksheet GetCTWorksheet()
         {
             return this.worksheet;
         }
@@ -440,7 +440,7 @@ namespace NPOI.XSSF.UserModel
             for (int i = 0; i < size; i++)
             {
                 CellRangeAddress region = regions[i];
-                foreach (CellRangeAddress other in regions.Skip(i)) //regions.subList(i+1, regions.size()
+                foreach (CellRangeAddress other in regions.Skip(i+1)) //regions.subList(i+1, regions.size()
                 {
                     if (region.Intersects(other))
                     {
@@ -3145,11 +3145,11 @@ namespace NPOI.XSSF.UserModel
                     if (row.GetCTRow().outlineLevel == ((XSSFRow)GetRow(i)).GetCTRow()
                             .outlineLevel)
                     {
-                        ((XSSFRow)GetRow(i)).GetCTRow().unsetHidden();
+                        ((XSSFRow)GetRow(i)).GetCTRow().UnsetHidden();
                     }
                     else if (!IsRowGroupCollapsed(i))
                     {
-                        ((XSSFRow)GetRow(i)).GetCTRow().unsetHidden();
+                        ((XSSFRow)GetRow(i)).GetCTRow().UnsetHidden();
                     }
                 }
             }
@@ -5131,7 +5131,9 @@ namespace NPOI.XSSF.UserModel
                             }
                         }
 
-                        string oldPictureId = anchor.picture.blipFill.blip.embed;
+                        string oldPictureId = anchor.picture?.blipFill?.blip.embed;
+                        if (oldPictureId == null)
+                            continue;
                         if (!pictureIdMapping.ContainsKey(oldPictureId))
                         {
                             XSSFPictureData srcPic = FindPicture(sheetPictures, oldPictureId);
@@ -5236,7 +5238,7 @@ namespace NPOI.XSSF.UserModel
             if (!srcRow.GetCTRow().IsSetCustomHeight())
             {
                 //Copying height sets the custom height flag, but Excel will set a value for height even if it's auto-sized.
-                destRow.GetCTRow().unSetCustomHeight();
+                destRow.GetCTRow().UnsetCustomHeight();
             }
             destRow.Hidden = srcRow.Hidden;
             destRow.Collapsed = srcRow.Collapsed;

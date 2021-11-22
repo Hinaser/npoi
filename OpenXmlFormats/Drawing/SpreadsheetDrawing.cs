@@ -1495,7 +1495,18 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
             get { return fromField; }
             set { fromField = value; }
         }
-
+        Vml.Spreadsheet.CT_AlternateContent alternateContentField = null;
+        public Vml.Spreadsheet.CT_AlternateContent alternateContent
+        {
+            get
+            {
+                return alternateContentField;
+            }
+            set
+            {
+                this.alternateContentField = value;
+            }
+        }
         [XmlElement]
         public CT_PositiveSize2D ext
         {
@@ -1554,6 +1565,10 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
                 this.graphicalObjectField.Write(sw, "graphicFrame");
             else if (this.pictureField != null)
                 this.picture.Write(sw, "pic");
+            if (this.alternateContent != null)
+            {
+                this.alternateContent.Write(sw, "AlternateContent");
+            }
             if (this.clientData != null)
                 this.clientData.Write(sw, "clientData");
             sw.Write("</xdr:oneCellAnchor>");
@@ -1591,6 +1606,10 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
                 else if (childNode.LocalName == "graphicFrame")
                 {
                     oneCellAnchor.graphicFrame = CT_GraphicalObjectFrame.Parse(childNode, namespaceManager);
+                }
+                else if (childNode.LocalName == "AlternateContent")
+                {
+                    oneCellAnchor.alternateContent = Vml.Spreadsheet.CT_AlternateContent.Parse(childNode, namespaceManager);
                 }
                 else if (childNode.LocalName == "clientData")
                 {
@@ -1735,13 +1754,12 @@ namespace NPOI.OpenXmlFormats.Dml.Spreadsheet
                 this.graphicalObjectField.Write(sw, "graphicFrame");
             else if (this.pictureField != null)
                 this.picture.Write(sw, "pic");
-            sw.Write("</xdr:oneCellAnchor>");
 
             if (this.clientData != null)
             {
                 this.clientData.Write(sw, "clientData");
             }
-            sw.Write("</xdr:absCellAnchor");
+            sw.Write("</xdr:absCellAnchor>");
         }
     }
     [Serializable]

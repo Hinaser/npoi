@@ -178,6 +178,8 @@ namespace NPOI.XWPF.UserModel
             XmlSerializer xmlse = new XmlSerializer(typeof(NPOI.OpenXmlFormats.Dml.Picture.CT_Picture));
             foreach (string el in god.Any)
             {
+                if (el.IndexOf("pic:pic") < 0)
+                    continue;
                 System.IO.StringReader stringReader = new System.IO.StringReader(el);
 
                 NPOI.OpenXmlFormats.Dml.Picture.CT_Picture pict =
@@ -900,18 +902,18 @@ namespace NPOI.XWPF.UserModel
          *
          * @return value representing the font size
          */
-        public int FontSize
+        public double FontSize
         {
             get
             {
                 CT_RPr pr = run.rPr;
-                return (pr != null && pr.IsSetSz()) ? (int)(pr.sz.val / 2) : -1;
+                return (pr != null && pr.IsSetSz()) ? pr.sz.val / 2.0 : -1;
             }
             set
             {
                 CT_RPr pr = run.IsSetRPr() ? run.rPr : run.AddNewRPr();
                 CT_HpsMeasure ctSize = pr.IsSetSz() ? pr.sz : pr.AddNewSz();
-                ctSize.val = (ulong)value * 2;
+                ctSize.val = (ulong)(value * 2);
             }
         }
 
@@ -1219,7 +1221,36 @@ namespace NPOI.XWPF.UserModel
         {
             return pictures;
         }
+        public void SetStyle(string styleId)
+        {
+            CT_RPr pr = GetCTR().rPr;
+            if (null == pr)
+            {
+                pr = GetCTR().AddNewRPr();
+            }
+            CT_String style = pr.rStyle != null ? pr.rStyle : pr.AddNewRStyle();
+            style.val= styleId;
+        }
+        /// <summary>
+        /// Return this run's style ID. If this run has no style (no run properties or properties without a style), an empty string is returned.
+        /// </summary>
+        /// <returns></returns>
+        public string GetStyle()
+        {
+            CT_RPr pr = GetCTR().rPr;
+            if (pr == null)
+            {
+                return "";
+            }
 
+            CT_String style = pr.rStyle;
+            if (style == null)
+            {
+                return "";
+            }
+
+            return style.val;
+        }
 
         /**
          * Add the xml:spaces="preserve" attribute if the string has leading or trailing white spaces
@@ -1229,7 +1260,7 @@ namespace NPOI.XWPF.UserModel
         static void preserveSpaces(CT_Text xs)
         {
             String text = xs.Value;
-            if (text != null && (text.StartsWith(" ") || text.EndsWith(" ")))
+            if (text != null && text.Length>=1 && (text.StartsWith(" ") || text.EndsWith(" ")))
             {
                 //    XmlCursor c = xs.NewCursor();
                 //    c.ToNextToken();

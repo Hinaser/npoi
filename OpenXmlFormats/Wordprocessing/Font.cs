@@ -446,29 +446,17 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
 
         private string csField;
 
-        private ST_Theme asciiThemeField;
+        private ST_Theme? asciiThemeField;
 
-        private bool asciiThemeFieldSpecified;
+        private ST_Theme? hAnsiThemeField;
 
-        private ST_Theme hAnsiThemeField;
+        private ST_Theme? eastAsiaThemeField;
 
-        private bool hAnsiThemeFieldSpecified;
-
-        private ST_Theme eastAsiaThemeField;
-
-        private bool eastAsiaThemeFieldSpecified;
-
-        private ST_Theme csthemeField;
-
-        private bool csthemeFieldSpecified;
+        private ST_Theme? csthemeField;
 
         public CT_Fonts()
         {
             this.hintField = ST_Hint.@default;
-            this.csthemeField = ST_Theme.majorEastAsia;
-            this.eastAsiaThemeField = ST_Theme.majorEastAsia;
-            this.hAnsiThemeField = ST_Theme.majorEastAsia;
-            this.asciiThemeField = ST_Theme.majorEastAsia;
         }
 
 
@@ -481,8 +469,11 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             ctObj.hAnsi = XmlHelper.ReadString(node.Attributes["w:hAnsi"]);
             ctObj.eastAsia = XmlHelper.ReadString(node.Attributes["w:eastAsia"]);
             ctObj.cs = XmlHelper.ReadString(node.Attributes["w:cs"]);
-            if (node.Attributes["w:hint"] != null && node.Attributes["w:hint"].Value!="default")
+            if (node.Attributes["w:hint"] != null)
+            {
                 ctObj.hint = (ST_Hint)Enum.Parse(typeof(ST_Hint), node.Attributes["w:hint"].Value);
+                ctObj.hintFieldSpecified = true;
+            }
             if (node.Attributes["w:asciiTheme"] != null)
                 ctObj.asciiTheme = (ST_Theme)Enum.Parse(typeof(ST_Theme), node.Attributes["w:asciiTheme"].Value);
             if (node.Attributes["w:hAnsiTheme"] != null)
@@ -494,25 +485,22 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             return ctObj;
         }
 
-
-
         internal void Write(StreamWriter sw, string nodeName)
         {
             sw.Write(string.Format("<w:{0}", nodeName));
-            XmlHelper.WriteAttribute(sw, "w:ascii", this.ascii);
-            XmlHelper.WriteAttribute(sw, "w:eastAsia", this.eastAsia);
-            XmlHelper.WriteAttribute(sw, "w:hAnsi", this.hAnsi);
-            XmlHelper.WriteAttribute(sw, "w:cs", this.cs);
-            if (this.hint != ST_Hint.@default)
+            if (this.hint != ST_Hint.@default || this.hintFieldSpecified)
                 XmlHelper.WriteAttribute(sw, "w:hint", this.hint.ToString());
-
-            if (this.asciiTheme != ST_Theme.majorEastAsia)
+            XmlHelper.WriteAttribute(sw, "w:ascii", this.ascii);
+            XmlHelper.WriteAttribute(sw, "w:hAnsi", this.hAnsi);
+            XmlHelper.WriteAttribute(sw, "w:eastAsia", this.eastAsia);
+            XmlHelper.WriteAttribute(sw, "w:cs", this.cs);
+            if (this.asciiTheme != null)
                 XmlHelper.WriteAttribute(sw, "w:asciiTheme", this.asciiTheme.ToString());
-            if (this.eastAsiaTheme != ST_Theme.majorEastAsia)
+            if (this.eastAsiaTheme !=null)
                 XmlHelper.WriteAttribute(sw, "w:eastAsiaTheme", this.eastAsiaTheme.ToString());
             if (this.hAnsiTheme != ST_Theme.majorEastAsia)
                 XmlHelper.WriteAttribute(sw, "w:hAnsiTheme", this.hAnsiTheme.ToString());
-            if (this.cstheme != ST_Theme.majorEastAsia)
+            if (this.cstheme != null)
                 XmlHelper.WriteAttribute(sw, "w:cstheme", this.cstheme.ToString());
             sw.Write("/>");
         }
@@ -597,8 +585,7 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             }
         }
 
-        [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified)]
-        public ST_Theme asciiTheme
+        public ST_Theme? asciiTheme
         {
             get
             {
@@ -610,21 +597,7 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             }
         }
 
-        [XmlIgnore]
-        public bool asciiThemeSpecified
-        {
-            get
-            {
-                return this.asciiThemeFieldSpecified;
-            }
-            set
-            {
-                this.asciiThemeFieldSpecified = value;
-            }
-        }
-
-        [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified)]
-        public ST_Theme hAnsiTheme
+        public ST_Theme? hAnsiTheme
         {
             get
             {
@@ -636,21 +609,8 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             }
         }
 
-        [XmlIgnore]
-        public bool hAnsiThemeSpecified
-        {
-            get
-            {
-                return this.hAnsiThemeFieldSpecified;
-            }
-            set
-            {
-                this.hAnsiThemeFieldSpecified = value;
-            }
-        }
 
-        [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified)]
-        public ST_Theme eastAsiaTheme
+        public ST_Theme? eastAsiaTheme
         {
             get
             {
@@ -662,21 +622,8 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             }
         }
 
-        [XmlIgnore]
-        public bool eastAsiaThemeSpecified
-        {
-            get
-            {
-                return this.eastAsiaThemeFieldSpecified;
-            }
-            set
-            {
-                this.eastAsiaThemeFieldSpecified = value;
-            }
-        }
 
-        [XmlAttribute(Form = System.Xml.Schema.XmlSchemaForm.Qualified)]
-        public ST_Theme cstheme
+        public ST_Theme? cstheme
         {
             get
             {
@@ -685,19 +632,6 @@ namespace NPOI.OpenXmlFormats.Wordprocessing
             set
             {
                 this.csthemeField = value;
-            }
-        }
-
-        [XmlIgnore]
-        public bool csthemeSpecified
-        {
-            get
-            {
-                return this.csthemeFieldSpecified;
-            }
-            set
-            {
-                this.csthemeFieldSpecified = value;
             }
         }
 
