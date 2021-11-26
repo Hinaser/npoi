@@ -3671,6 +3671,38 @@ namespace NPOI.XSSF.UserModel
             return rownum + n;
         }
 
+        public void RemoveAndShiftUpCellRange(
+            int startRow,
+            int startCol,
+            int endRow,
+            int endCol,
+            bool copyRowHeight,
+            bool resetOriginalRowHeight
+        ){
+            // Unless positive count of rows is going to be removed, do nothing and return.
+            int nRowsUp = endRow - startRow;
+            if(nRowsUp <= 0)
+            {
+                return;
+            }
+
+            // Check whether non-dissolvable merged region exists
+            // if(UndissolvableMergedReginoExists(startRow, startCol, endRow, endCol)) return;
+
+            XSSFVMLDrawing vml = GetVMLDrawing(false);
+            List<Tuple<int, int>> cellsToRemove = new List<Tuple<int, int>>(); // <rowIndex, cellIndex>
+            List<CellAddress> commentsToRemove = new List<CellAddress>();
+            List<CT_Row> ctRowsToRemove = new List<CT_Row>();
+
+            // Remove all cells which will be overwritten
+            foreach (KeyValuePair<int, XSSFRow> rowDict in _rows)
+            {
+                XSSFRow row = rowDict.Value;
+                int rownum = row.RowNum;
+
+            }
+        }
+
         public void UngroupColumn(int fromColumn, int toColumn)
         {
             CT_Cols cols = worksheet.GetColsArray(0);
