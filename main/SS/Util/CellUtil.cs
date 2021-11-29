@@ -105,6 +105,63 @@ namespace NPOI.SS.Util
             // no instances of this class
         }
 
+        public static ICell MoveCell(ICell srcCell, IRow dstRow, int dstColIndex)
+        {
+            IRow srcRow = srcCell.Row;
+            if(srcRow.RowNum == dstRow.RowNum && srcCell.ColumnIndex == dstColIndex)
+            {
+                return srcCell;
+            }
+
+            ICell dstCell = dstRow.GetCell(dstColIndex);
+            if(dstCell == null)
+            {
+                dstCell = dstRow.CreateCell(dstColIndex);
+            }
+
+            if(srcCell.CellStyle != null)
+            {
+                dstCell.CellStyle = srcCell.CellStyle;
+            }
+            if(srcCell.CellComment != null)
+            {
+                dstCell.CellComment = srcCell.CellComment;
+            }
+            if(srcCell.Hyperlink != null)
+            {
+                dstCell.Hyperlink = srcCell.Hyperlink;
+            }
+            dstCell.SetCellType(srcCell.CellType);
+
+            // Set the cell data value
+            switch (srcCell.CellType)
+            {
+                case CellType.Blank:
+                    dstCell.SetCellValue(srcCell.StringCellValue);
+                    break;
+                case CellType.Boolean:
+                    dstCell.SetCellValue(srcCell.BooleanCellValue);
+                    break;
+                case CellType.Error:
+                    dstCell.SetCellErrorValue(srcCell.ErrorCellValue);
+                    break;
+                case CellType.Formula:
+                    dstCell.SetCellFormula(srcCell.CellFormula);
+                    break;
+                case CellType.Numeric:
+                    dstCell.SetCellValue(srcCell.NumericCellValue);
+                    break;
+                case CellType.String:
+                    dstCell.SetCellValue(srcCell.RichStringCellValue);
+                    break;
+            }
+
+            // Remove source cell from source row
+            srcRow.RemoveCell(srcCell);
+
+            return dstCell;
+        }
+
         public static ICell CopyCell(IRow row, int sourceIndex, int targetIndex)
         {
             if (sourceIndex == targetIndex)
