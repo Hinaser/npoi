@@ -3675,9 +3675,7 @@ namespace NPOI.XSSF.UserModel
             int startRow,
             int startCol,
             int endRow,
-            int endCol,
-            bool copyRowHeight,
-            bool resetOriginalRowHeight
+            int endCol
         ){
             // Unless positive count of rows is going to be removed, do nothing and return.
             int nRowsUp = endRow - startRow;
@@ -3689,18 +3687,150 @@ namespace NPOI.XSSF.UserModel
             // Check whether non-dissolvable merged region exists
             // if(UndissolvableMergedReginoExists(startRow, startCol, endRow, endCol)) return;
 
+            //// Removing part ////
+
             XSSFVMLDrawing vml = GetVMLDrawing(false);
-            List<Tuple<int, int>> cellsToRemove = new List<Tuple<int, int>>(); // <rowIndex, cellIndex>
-            List<CellAddress> commentsToRemove = new List<CellAddress>();
+            List<int> rowsToRemove = new List<int>();
             List<CT_Row> ctRowsToRemove = new List<CT_Row>();
 
-            // Remove all cells which will be overwritten
+            // Remove all cells in a removing region
             foreach (KeyValuePair<int, XSSFRow> rowDict in _rows)
             {
                 XSSFRow row = rowDict.Value;
                 int rownum = row.RowNum;
 
+                foreach(XSSFCell cell in row)
+                {
+                    if (!ShouldRemoveCell(startRow, startCol, endRow, endCol, rownum, cell.ColumnIndex))
+                    {
+                        continue;
+                    }
+
+                    if(cell.CellComment != null && sheetComments != null)
+                    {
+                        cell.RemoveCellComment();
+                        // sheetComments.RemoveComment(cell.Address);
+                        vml.RemoveCommentShape(rownum, cell.ColumnIndex);
+                    }
+                    if(hyperlinks != null)
+                    {
+                        // hyperlinks.Remove((XSSFHyperlink)cell.Hyperlink);
+                        cell.RemoveHyperlink();
+                    }
+
+                    row.RemoveCell(cell);
+                }
+
+                if(row.Cells.Count == 0)
+                {
+                    // remove row from worksheet.GetSheetData row array
+                    //int idx = _rows.headMap(row.getRowNum()).size();
+                    int idx = _rows.IndexOfValue(row);
+                    //worksheet.sheetData.RemoveRow(idx);
+                    ctRowsToRemove.Add(worksheet.sheetData.GetRowArray(idx));
+
+                    // remove row from _rows
+                    rowsToRemove.Add(rowDict.Key);
+                }
             }
+
+            foreach (int rowKey in rowsToRemove)
+            {
+                _rows.Remove(rowKey);
+            }
+            worksheet.sheetData.RemoveRows(ctRowsToRemove);
+
+            //// Shifting part ////
+
+            // then do the actual moving and also adjust comments/rowHeight
+            // we need to sort it in a way so the Shifting does not mess up the structures, 
+            // i.e. when Shifting down, start from down and go up, when Shifting up, vice-versa
+            SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
+
+            var rownumIndexMap = new Dictionary<int, int>(); // <rownum, index>
+            for (int i=0;i<_rows.Count;i++)
+            {
+                XSSFRow row = _rows[i];
+                int rownum = row.RowNum;
+                rownumIndexMap.Add(rownum, i);
+
+                // Rows above removed rows are not affected so skip them.
+                if(rownum <= endRow)
+                {
+                    continue;
+                }
+
+                int newrownum = rownum - nRowsUp;
+
+                foreach (XSSFCell cell in row)
+                {
+                    var isTargetRange = startCol <= cell.ColumnIndex && cell.ColumnIndex <= endCol;
+                    if (!isTargetRange)
+                    {
+                        continue;
+                    }
+
+                    IRow dstRow;
+                    if (!rownumIndexMap.ContainsKey(newrownum))
+                    {
+                        dstRow = CreateRow(newrownum);
+                    }
+                    else
+                    {
+                        var i_row = rownumIndexMap[newrownum];
+                        dstRow = _rows[i_row];
+                    }
+
+                    CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
+                }
+
+                // @todo Move comment vml row/col index as well
+
+                if (sheetComments != null)
+                {
+                    // calculate the new rownum
+                    int newrownum = ShiftedRowNum(startRow, endRow, n, rownum);
+
+                    // is there a change necessary for the current row?
+                    if (newrownum != rownum)
+                    {
+                        CT_CommentList lst = sheetComments.GetCTComments().commentList;
+                        foreach (CT_Comment comment in lst.comment)
+                        {
+                            String oldRef = comment.@ref;
+                            CellReference ref1 = new CellReference(oldRef);
+
+                            // is this comment part of the current row?
+                            if (ref1.Row == rownum)
+                            {
+                                XSSFComment xssfComment = new XSSFComment(sheetComments, comment,
+                                        vml == null ? null : vml.FindCommentShape(rownum, ref1.Col));
+
+                                // we should not perform the Shifting right here as we would then find
+                                // already Shifted comments and would shift them again...
+                                if (commentsToShift.ContainsKey(xssfComment))
+                                    commentsToShift[xssfComment] = newrownum;
+                                else
+                                    commentsToShift.Add(xssfComment, newrownum);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // adjust all the affected comment-structures now
+            // the Map is sorted and thus provides them in the order that we need here, 
+            // i.e. from down to up if Shifting down, vice-versa otherwise
+            foreach (KeyValuePair<XSSFComment, int> entry in commentsToShift)
+            {
+                entry.Key.Row = (/*setter*/entry.Value);
+            }
+
+        }
+
+        private static bool ShouldRemoveCell(int startRow, int startCol, int endRow, int endCol, int rowNum, int colNum)
+        {
+            return startRow <= rowNum && rowNum <= endRow && startCol <= colNum && colNum <= endCol;
         }
 
         public void UngroupColumn(int fromColumn, int toColumn)
