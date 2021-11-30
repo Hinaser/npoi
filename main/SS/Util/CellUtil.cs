@@ -127,7 +127,7 @@ namespace NPOI.SS.Util
             {
                 dstCell.CellComment = srcCell.CellComment;
             }
-            if(srcCell.Hyperlink != null)
+            if (srcCell.Hyperlink != null)
             {
                 dstCell.Hyperlink = srcCell.Hyperlink;
             }
