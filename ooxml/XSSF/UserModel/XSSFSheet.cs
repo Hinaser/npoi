@@ -28,6 +28,7 @@ using NPOI.OpenXml4Net.Exceptions;
 using NPOI.OpenXml4Net.OPC;
 using NPOI.OpenXmlFormats;
 using NPOI.OpenXmlFormats.Spreadsheet;
+using NPOI.OpenXmlFormats.Vml.Spreadsheet;
 using NPOI.SS;
 using NPOI.SS.Formula;
 using NPOI.SS.UserModel;
@@ -3671,12 +3672,7 @@ namespace NPOI.XSSF.UserModel
             return rownum + n;
         }
 
-        public void RemoveAndShiftUpCellRange(
-            int startRow,
-            int startCol,
-            int endRow,
-            int endCol
-        ){
+        public void RemoveAndShiftUpCellRange(int startRow, int startCol, int endRow, int endCol){
             // Unless positive count of rows is going to be removed, do nothing and return.
             int nRowsUp = endRow - startRow;
             if(nRowsUp <= 0)
@@ -3747,6 +3743,7 @@ namespace NPOI.XSSF.UserModel
             // i.e. when Shifting down, start from down and go up, when Shifting up, vice-versa
             SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
 
+            List<IRow> ctRowsToAdd = new List<IRow>();
             var rownumIndexMap = new Dictionary<int, int>(); // <rownum, index>
             for (int i=0;i<_rows.Count;i++)
             {
@@ -3761,6 +3758,7 @@ namespace NPOI.XSSF.UserModel
                 }
 
                 int newrownum = rownum - nRowsUp;
+                IRow dstRow = null;
 
                 foreach (XSSFCell cell in row)
                 {
@@ -3770,62 +3768,70 @@ namespace NPOI.XSSF.UserModel
                         continue;
                     }
 
-                    IRow dstRow;
-                    if (!rownumIndexMap.ContainsKey(newrownum))
+                    if(dstRow == null)
                     {
-                        dstRow = CreateRow(newrownum);
+                        if (!rownumIndexMap.ContainsKey(newrownum))
+                        {
+                            dstRow = CreateRow(newrownum);
+                            ctRowsToAdd.Add(dstRow);
+                        }
+                        else
+                        {
+                            var i_row = rownumIndexMap[newrownum];
+                            dstRow = _rows[i_row];
+                        }
                     }
-                    else
+
+                    var vmlShape = vml.FindCommentShape(cell.Row.RowNum, cell.ColumnIndex);
+                    // we potentially need to adjust the column/row information in the shape
+                    // the same way as we do in setRow()/setColumn()
+                    if (vmlShape != null && vmlShape.SizeOfClientDataArray() > 0)
                     {
-                        var i_row = rownumIndexMap[newrownum];
-                        dstRow = _rows[i_row];
+                        CT_ClientData clientData = vmlShape.GetClientDataArray(0);
+                        clientData.SetRowArray(0, dstRow.RowNum);
+                        clientData.SetColumnArray(0, cell.ColumnIndex);
+
+                        // There is a very odd xmlbeans bug when changing the row
+                        //  arrays which can lead to corrupt pointer
+                        // This call seems to fix them again... See bug #50795
+                        //vmlShape.GetClientDataList().ToString();
                     }
 
                     CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
                 }
-
-                // @todo Move comment vml row/col index as well
-
-                if (sheetComments != null)
-                {
-                    // calculate the new rownum
-                    int newrownum = ShiftedRowNum(startRow, endRow, n, rownum);
-
-                    // is there a change necessary for the current row?
-                    if (newrownum != rownum)
-                    {
-                        CT_CommentList lst = sheetComments.GetCTComments().commentList;
-                        foreach (CT_Comment comment in lst.comment)
-                        {
-                            String oldRef = comment.@ref;
-                            CellReference ref1 = new CellReference(oldRef);
-
-                            // is this comment part of the current row?
-                            if (ref1.Row == rownum)
-                            {
-                                XSSFComment xssfComment = new XSSFComment(sheetComments, comment,
-                                        vml == null ? null : vml.FindCommentShape(rownum, ref1.Col));
-
-                                // we should not perform the Shifting right here as we would then find
-                                // already Shifted comments and would shift them again...
-                                if (commentsToShift.ContainsKey(xssfComment))
-                                    commentsToShift[xssfComment] = newrownum;
-                                else
-                                    commentsToShift.Add(xssfComment, newrownum);
-                            }
-                        }
-                    }
-                }
             }
 
-            // adjust all the affected comment-structures now
-            // the Map is sorted and thus provides them in the order that we need here, 
-            // i.e. from down to up if Shifting down, vice-versa otherwise
-            foreach (KeyValuePair<XSSFComment, int> entry in commentsToShift)
+            // TODO: Do something below
+            XSSFRowShifter rowShifter = new XSSFRowShifter(this);
+
+            int sheetIndex = Workbook.GetSheetIndex(this);
+            String sheetName = Workbook.GetSheetName(sheetIndex);
+            FormulaShifter shifter = FormulaShifter.CreateForRowShift(
+                                       sheetIndex, sheetName, startRow, endRow, n, SpreadsheetVersion.EXCEL2007);
+
+            rowShifter.UpdateNamedRanges(shifter);
+            rowShifter.UpdateFormulas(shifter);
+            rowShifter.ShiftMergedRegions(startRow, endRow, n);
+            rowShifter.UpdateConditionalFormatting(shifter);
+            rowShifter.UpdateHyperlinks(shifter);
+
+            //rebuild the _rows map
+            Dictionary<int, XSSFRow> map = new Dictionary<int, XSSFRow>();
+            foreach (XSSFRow r in _rows.Values)
             {
-                entry.Key.Row = (/*setter*/entry.Value);
+                map.Add(r.RowNum, r);
+            }
+            _rows.Clear();
+            //_rows.putAll(map);
+            foreach (KeyValuePair<int, XSSFRow> kv in map)
+            {
+                _rows.Add(kv.Key, kv.Value);
             }
 
+            // Sort CTRows by index asc.
+            // not found at poi 3.15
+            if (worksheet.sheetData.row != null)
+                worksheet.sheetData.row.Sort((row1, row2) => row1.r.CompareTo(row2.r));
         }
 
         private static bool ShouldRemoveCell(int startRow, int startCol, int endRow, int endCol, int rowNum, int colNum)
