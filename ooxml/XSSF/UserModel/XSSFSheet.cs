@@ -3819,6 +3819,8 @@ namespace NPOI.XSSF.UserModel
                     }
 
                     row.RemoveCell(cell);
+
+                    // TODO: Should merged cells be removed/edited?
                 }
 
                 if(row.Cells.Count == 0)
@@ -3847,7 +3849,7 @@ namespace NPOI.XSSF.UserModel
             // i.e. when Shifting down, start from down and go up, when Shifting up, vice-versa
             SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
 
-            List<IRow> ctRowsToAdd = new List<IRow>();
+            List<IRow> iRowsToAdd = new List<IRow>();
             var rownumIndexMap = new Dictionary<int, int>(); // <rownum, index>
             for (int i=0;i<_rows.Count;i++)
             {
@@ -3877,7 +3879,7 @@ namespace NPOI.XSSF.UserModel
                         if (!rownumIndexMap.ContainsKey(newrownum))
                         {
                             dstRow = CreateRow(newrownum);
-                            ctRowsToAdd.Add(dstRow);
+                            iRowsToAdd.Add(dstRow);
                         }
                         else
                         {
@@ -3906,6 +3908,7 @@ namespace NPOI.XSSF.UserModel
             }
 
             // TODO: Do something below
+            /*
             XSSFRowShifter rowShifter = new XSSFRowShifter(this);
 
             int sheetIndex = Workbook.GetSheetIndex(this);
@@ -3918,10 +3921,15 @@ namespace NPOI.XSSF.UserModel
             rowShifter.ShiftMergedRegions(startRow, endRow, n);
             rowShifter.UpdateConditionalFormatting(shifter);
             rowShifter.UpdateHyperlinks(shifter);
+            */
 
             //rebuild the _rows map
             Dictionary<int, XSSFRow> map = new Dictionary<int, XSSFRow>();
             foreach (XSSFRow r in _rows.Values)
+            {
+                map.Add(r.RowNum, r);
+            }
+            foreach(XSSFRow r in iRowsToAdd)
             {
                 map.Add(r.RowNum, r);
             }

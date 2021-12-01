@@ -45,8 +45,9 @@ namespace TestCases.XSSF.UserModel
         {
             XSSFWorkbook wb = XSSFITestDataProvider.instance.OpenSampleWorkbook("RowColDeleting.xlsx") as XSSFWorkbook;
             XSSFSheet sheet = wb.GetSheetAt(0) as XSSFSheet;
+            sheet.RemoveAndShiftUpCellRange(7, 1, 12, 7);
 
-            // WriteToFile(wb);
+            WriteToFile(wb);
             wb.Close();
         }
 
