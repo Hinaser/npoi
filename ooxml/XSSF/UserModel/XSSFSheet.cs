@@ -3695,6 +3695,7 @@ namespace NPOI.XSSF.UserModel
                 XSSFRow row = rowDict.Value;
                 int rownum = row.RowNum;
 
+                List<ICell> cellsToRemove = new List<ICell>();
                 foreach(XSSFCell cell in row)
                 {
                     if (!ShouldRemoveCell(startRow, startCol, endRow, endCol, rownum, cell.ColumnIndex))
@@ -3714,10 +3715,12 @@ namespace NPOI.XSSF.UserModel
                         cell.RemoveHyperlink();
                     }
 
-                    row.RemoveCell(cell);
+                    cellsToRemove.Add(cell);
 
                     // TODO: Should merged cells be removed/edited?
                 }
+
+                foreach (ICell cell in cellsToRemove) row.RemoveCell(cell);
 
                 if(row.Cells.Count == 0)
                 {
@@ -3749,7 +3752,7 @@ namespace NPOI.XSSF.UserModel
             var rownumIndexMap = new Dictionary<int, int>(); // <rownum, index>
             for (int i=0;i<_rows.Count;i++)
             {
-                XSSFRow row = _rows[i];
+                XSSFRow row = _rows[_rows.Keys[i]];
                 int rownum = row.RowNum;
                 rownumIndexMap.Add(rownum, i);
 
@@ -3762,6 +3765,7 @@ namespace NPOI.XSSF.UserModel
                 int newrownum = rownum - nRowsUp;
                 IRow dstRow = null;
 
+                List<ICell> cellsToMove = new List<ICell>();
                 foreach (XSSFCell cell in row)
                 {
                     var isTargetRange = startCol <= cell.ColumnIndex && cell.ColumnIndex <= endCol;
@@ -3784,23 +3788,28 @@ namespace NPOI.XSSF.UserModel
                         }
                     }
 
-                    var vmlShape = vml.FindCommentShape(cell.Row.RowNum, cell.ColumnIndex);
-                    // we potentially need to adjust the column/row information in the shape
-                    // the same way as we do in setRow()/setColumn()
-                    if (vmlShape != null && vmlShape.SizeOfClientDataArray() > 0)
+                    if(vml != null)
                     {
-                        CT_ClientData clientData = vmlShape.GetClientDataArray(0);
-                        clientData.SetRowArray(0, dstRow.RowNum);
-                        clientData.SetColumnArray(0, cell.ColumnIndex);
+                        var vmlShape = vml.FindCommentShape(cell.Row.RowNum, cell.ColumnIndex);
+                        // we potentially need to adjust the column/row information in the shape
+                        // the same way as we do in setRow()/setColumn()
+                        if (vmlShape != null && vmlShape.SizeOfClientDataArray() > 0)
+                        {
+                            CT_ClientData clientData = vmlShape.GetClientDataArray(0);
+                            clientData.SetRowArray(0, dstRow.RowNum);
+                            clientData.SetColumnArray(0, cell.ColumnIndex);
 
-                        // There is a very odd xmlbeans bug when changing the row
-                        //  arrays which can lead to corrupt pointer
-                        // This call seems to fix them again... See bug #50795
-                        //vmlShape.GetClientDataList().ToString();
+                            // There is a very odd xmlbeans bug when changing the row
+                            //  arrays which can lead to corrupt pointer
+                            // This call seems to fix them again... See bug #50795
+                            //vmlShape.GetClientDataList().ToString();
+                        }
                     }
 
-                    CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
+                    cellsToMove.Add(cell);                    
                 }
+
+                foreach(var cell in cellsToMove) CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
             }
 
             // TODO: Do something below

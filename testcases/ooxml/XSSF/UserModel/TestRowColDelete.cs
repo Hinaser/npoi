@@ -32,14 +32,13 @@ namespace TestCases.XSSF.UserModel
 {
 
     [TestFixture]
-    public class TestRowColDelete : BaseTestXSheet
+    public class TestRowColDelete
     {
 
         public TestRowColDelete()
-            : base(XSSFITestDataProvider.instance)
         {
-
         }
+
         [Test]
         public void DeletePartialRowCol()
         {
