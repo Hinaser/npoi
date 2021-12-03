@@ -3695,6 +3695,11 @@ namespace NPOI.XSSF.UserModel
                 XSSFRow row = rowDict.Value;
                 int rownum = row.RowNum;
 
+                if(rownum < startRow || rownum > endRow)
+                {
+                    continue;
+                }
+
                 List<ICell> cellsToRemove = new List<ICell>();
                 foreach(XSSFCell cell in row)
                 {
@@ -3716,8 +3721,6 @@ namespace NPOI.XSSF.UserModel
                     }
 
                     cellsToRemove.Add(cell);
-
-                    // TODO: Should merged cells be removed/edited?
                 }
 
                 foreach (ICell cell in cellsToRemove) row.RemoveCell(cell);
@@ -3812,20 +3815,19 @@ namespace NPOI.XSSF.UserModel
                 foreach(var cell in cellsToMove) CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
             }
 
-            // TODO: Do something below
-            /*
-            XSSFRowShifter rowShifter = new XSSFRowShifter(this);
+            XSSFCellShifter cellShifter = new XSSFCellShifter(this);
+            cellShifter.RemoveMergedRegions(startRow, startCol, endRow, endCol);
 
+            /*
             int sheetIndex = Workbook.GetSheetIndex(this);
             String sheetName = Workbook.GetSheetName(sheetIndex);
             FormulaShifter shifter = FormulaShifter.CreateForRowShift(
                                        sheetIndex, sheetName, startRow, endRow, n, SpreadsheetVersion.EXCEL2007);
 
-            rowShifter.UpdateNamedRanges(shifter);
-            rowShifter.UpdateFormulas(shifter);
-            rowShifter.ShiftMergedRegions(startRow, endRow, n);
-            rowShifter.UpdateConditionalFormatting(shifter);
-            rowShifter.UpdateHyperlinks(shifter);
+            cellShifter.UpdateNamedRanges(shifter);
+            cellShifter.UpdateFormulas(shifter);
+            cellShifter.UpdateConditionalFormatting(shifter);
+            cellShifter.UpdateHyperlinks(shifter);
             */
 
             //rebuild the _rows map
