@@ -3725,6 +3725,9 @@ namespace NPOI.XSSF.UserModel
 
                 foreach (ICell cell in cellsToRemove) row.RemoveCell(cell);
 
+                // I once tried to remove an empty row, but I found that even an empty row keeps style information.
+                // So I decided not to remove a row even if it is empty.
+                /*
                 if(row.Cells.Count == 0)
                 {
                     // remove row from worksheet.GetSheetData row array
@@ -3736,13 +3739,15 @@ namespace NPOI.XSSF.UserModel
                     // remove row from _rows
                     rowsToRemove.Add(rowDict.Key);
                 }
+                */
             }
 
-            foreach (int rowKey in rowsToRemove)
-            {
-                _rows.Remove(rowKey);
-            }
+            // I once tried to remove an empty row, but I found that even an empty row keeps style information.
+            // So I decided not to remove a row even if it is empty.
+            /*
+            foreach (int rowKey in rowsToRemove) _rows.Remove(rowKey);
             worksheet.sheetData.RemoveRows(ctRowsToRemove);
+            */
 
             //// Shifting part ////
 
