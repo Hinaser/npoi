@@ -3756,13 +3756,11 @@ namespace NPOI.XSSF.UserModel
             // i.e. when Shifting down, start from down and go up, when Shifting up, vice-versa
             SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
 
-            List<IRow> iRowsToAdd = new List<IRow>();
-            var rownumIndexMap = new Dictionary<int, int>(); // <rownum, index>
-            for (int i=0;i<_rows.Count;i++)
+            for (int i=0;i<_rows.Keys.Count;i++)
             {
-                XSSFRow row = _rows[_rows.Keys[i]];
+                var key = _rows.Keys[i];
+                XSSFRow row = _rows[key];
                 int rownum = row.RowNum;
-                rownumIndexMap.Add(rownum, i);
 
                 // Rows above removed rows are not affected so skip them.
                 if(rownum <= endRow)
@@ -3784,15 +3782,13 @@ namespace NPOI.XSSF.UserModel
 
                     if(dstRow == null)
                     {
-                        if (!rownumIndexMap.ContainsKey(newrownum))
+                        if (!_rows.ContainsKey(newrownum))
                         {
                             dstRow = CreateRow(newrownum);
-                            iRowsToAdd.Add(dstRow);
                         }
                         else
                         {
-                            var i_row = rownumIndexMap[newrownum];
-                            dstRow = _rows[i_row];
+                            dstRow = _rows[newrownum];
                         }
                     }
 
@@ -3838,10 +3834,6 @@ namespace NPOI.XSSF.UserModel
             //rebuild the _rows map
             Dictionary<int, XSSFRow> map = new Dictionary<int, XSSFRow>();
             foreach (XSSFRow r in _rows.Values)
-            {
-                map.Add(r.RowNum, r);
-            }
-            foreach(XSSFRow r in iRowsToAdd)
             {
                 map.Add(r.RowNum, r);
             }

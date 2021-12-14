@@ -137,7 +137,7 @@ namespace NPOI.SS.Util
             switch (srcCell.CellType)
             {
                 case CellType.Blank:
-                    dstCell.SetCellValue(srcCell.StringCellValue);
+                    // dstCell.SetCellValue(srcCell.StringCellValue);
                     break;
                 case CellType.Boolean:
                     dstCell.SetCellValue(srcCell.BooleanCellValue);
