@@ -22,7 +22,20 @@ namespace NPOI.SS.Util
     using NPOI.SS.UserModel;
     using NPOI.Util;
     using SkiaSharp;
-    
+
+    // fork: double-precision size used to avoid int rounding of EMU dimensions
+    public class SizeD
+    {
+        public double Width;
+        public double Height;
+
+        public SizeD(double w, double h)
+        {
+            Width = w;
+            Height = h;
+        }
+    }
+
     /**
      * @author Yegor Kozlov
      */
@@ -217,7 +230,7 @@ namespace NPOI.SS.Util
             // in pixel
             SKSizeI imgSize = GetImageDimension(new MemoryStream(data.Data), data.PictureType);
             // in emus
-            SKSizeI anchorSize = ImageUtils.GetDimensionFromAnchor(picture);
+            SizeD anchorSize = ImageUtils.GetDimensionFromAnchorD(picture);
             double scaledWidth = (scaleX == Double.MaxValue)
                 ? imgSize.Width : anchorSize.Width / Units.EMU_PER_PIXEL * scaleX;
             double scaledHeight = (scaleY == Double.MaxValue)
@@ -314,6 +327,13 @@ namespace NPOI.SS.Util
          */
         public static SKSizeI GetDimensionFromAnchor(IPicture picture)
         {
+            SizeD size = GetDimensionFromAnchorD(picture);
+            return new SKSizeI((int)Math.Round(size.Width), (int)Math.Round(size.Height));
+        }
+
+        // fork: double-precision core so picture sizing does not lose sub-EMU precision
+        public static SizeD GetDimensionFromAnchorD(IPicture picture)
+        {
             IClientAnchor anchor = picture.ClientAnchor;
             bool isHSSF = (anchor is HSSFClientAnchor);
             ISheet sheet = picture.Sheet;
@@ -376,8 +396,7 @@ namespace NPOI.SS.Util
             w *= Units.EMU_PER_PIXEL;
             h *= Units.EMU_PER_PIXEL;
 
-            return new SKSizeI((int)Math.Round(w), (int)Math.Round(h));
-            //return new SKSizeI((int)w * Units.EMU_PER_PIXEL, (int)h * Units.EMU_PER_PIXEL);
+            return new SizeD(w, h);
 
         }
 

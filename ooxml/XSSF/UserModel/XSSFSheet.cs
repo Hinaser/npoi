@@ -2697,8 +2697,19 @@ namespace NPOI.XSSF.UserModel
         public double GetColumnWidthInPixels(int columnIndex)
         {
             EnsureWorksheetLoaded();
-            double widthIn256 = GetColumnWidth(columnIndex);
+            // fork: use the non-rounded width so picture sizing keeps sub-unit precision
+            double widthIn256 = GetColumnWidthDouble(columnIndex);
             return widthIn256 / 256.0 * Units.DEFAULT_CHARACTER_WIDTH;
+        }
+
+        // fork: precision-preserving column width (GetColumnWidth rounds to int 1/256 chars,
+        // which distorts inserted-picture sizing)
+        public double GetColumnWidthDouble(int columnIndex)
+        {
+            EnsureWorksheetLoaded();
+            CT_Col col = columnHelper.GetColumn(columnIndex, false);
+            double width = (col == null || !col.IsSetWidth()) ? this.DefaultColumnWidth : col.width;
+            return width * 256;
         }
 
         /// <summary>
