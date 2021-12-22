@@ -1185,6 +1185,13 @@ namespace NPOI.XSSF.UserModel
             return (int)(width * 256);
         }
 
+        public double GetColumnWidthDouble(int columnIndex)
+        {
+            CT_Col col = columnHelper.GetColumn(columnIndex, false);
+            double width = (col == null || !col.IsSetWidth()) ? this.DefaultColumnWidth : col.width;
+            return width * 256;
+        }
+
         /**
          * Get the actual column width in pixels
          * 
@@ -1195,7 +1202,7 @@ namespace NPOI.XSSF.UserModel
          */
         public float GetColumnWidthInPixels(int columnIndex)
         {
-            float widthIn256 = GetColumnWidth(columnIndex);
+            double widthIn256 = GetColumnWidthDouble(columnIndex);
             return (float)(widthIn256 / 256.0 * XSSFWorkbook.DEFAULT_CHARACTER_WIDTH);
         }
         /**
@@ -1212,11 +1219,11 @@ namespace NPOI.XSSF.UserModel
             get
             {
                 CT_SheetFormatPr pr = worksheet.sheetFormatPr;
-                return pr == null ? 8 : (int)pr.baseColWidth;
+                return pr == null ? 8 : (int)pr.defaultColWidth;
             }
             set
             {
-                GetSheetTypeSheetFormatPr().baseColWidth = (uint)value;
+                GetSheetTypeSheetFormatPr().defaultColWidth = (uint)value;
             }
         }
 

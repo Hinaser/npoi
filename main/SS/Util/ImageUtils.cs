@@ -23,6 +23,18 @@ namespace NPOI.SS.Util
     using NPOI.SS.UserModel;
     using NPOI.Util;
 
+    public class SizeD
+    {
+        public double Width;
+        public double Height;
+
+        public SizeD(double w, double h)
+        {
+            Width = w;
+            Height = h;
+        }
+    }
+
     /**
      * @author Yegor Kozlov
      */
@@ -123,7 +135,7 @@ namespace NPOI.SS.Util
             // in pixel
             Size imgSize = GetImageDimension(new MemoryStream(data.Data), data.PictureType);
             // in emus
-            Size anchorSize = ImageUtils.GetDimensionFromAnchor(picture);
+            SizeD anchorSize = ImageUtils.GetDimensionFromAnchor(picture);
             double scaledWidth = (scaleX == Double.MaxValue)
                 ? imgSize.Width : anchorSize.Width / Units.EMU_PER_PIXEL * scaleX;
             double scaledHeight = (scaleY == Double.MaxValue)
@@ -218,7 +230,7 @@ namespace NPOI.SS.Util
          * @param picture the picture Containing the anchor
          * @return the dimensions in EMUs
          */
-        public static Size GetDimensionFromAnchor(IPicture picture)
+        public static SizeD GetDimensionFromAnchor(IPicture picture)
         {
             IClientAnchor anchor = picture.ClientAnchor;
             bool isHSSF = (anchor is HSSFClientAnchor);
@@ -282,7 +294,7 @@ namespace NPOI.SS.Util
             w *= Units.EMU_PER_PIXEL;
             h *= Units.EMU_PER_PIXEL;
 
-            return new Size((int)Math.Round(w), (int)Math.Round(h));
+            return new SizeD(w, h);
             //return new Size((int)w * Units.EMU_PER_PIXEL, (int)h * Units.EMU_PER_PIXEL);
 
         }
