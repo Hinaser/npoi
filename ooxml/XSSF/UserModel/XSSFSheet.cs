@@ -3789,7 +3789,7 @@ namespace NPOI.XSSF.UserModel
 
         public void RemoveAndShiftUpCellRange(int startRow, int startCol, int endRow, int endCol){
             // Unless positive count of rows is going to be removed, do nothing and return.
-            int nRowsUp = endRow - startRow;
+            int nRowsUp = endRow - startRow + 1;
             if(nRowsUp <= 0)
             {
                 return;
@@ -3799,6 +3799,9 @@ namespace NPOI.XSSF.UserModel
             // if(UndissolvableMergedReginoExists(startRow, startCol, endRow, endCol)) return;
 
             //// Removing part ////
+
+            XSSFCellShifter cellShifter = new XSSFCellShifter(this);
+            cellShifter.RemoveMergedRegions(startRow, startCol, endRow, endCol);
 
             XSSFVMLDrawing vml = GetVMLDrawing(false);
             List<int> rowsToRemove = new List<int>();
@@ -3869,7 +3872,7 @@ namespace NPOI.XSSF.UserModel
             // then do the actual moving and also adjust comments/rowHeight
             // we need to sort it in a way so the Shifting does not mess up the structures, 
             // i.e. when Shifting down, start from down and go up, when Shifting up, vice-versa
-            SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
+            // SortedDictionary<XSSFComment, int> commentsToShift = new SortedDictionary<XSSFComment, int>(new ShiftCommentComparator(nRowsUp));
 
             for (int i=0;i<_rows.Keys.Count;i++)
             {
@@ -3931,8 +3934,7 @@ namespace NPOI.XSSF.UserModel
                 foreach(var cell in cellsToMove) CellUtil.MoveCell(cell, dstRow, cell.ColumnIndex);
             }
 
-            XSSFCellShifter cellShifter = new XSSFCellShifter(this);
-            cellShifter.RemoveMergedRegions(startRow, startCol, endRow, endCol);
+            cellShifter.ShiftUpMergedRegionsOnRowRemoval(startRow, startCol, endRow, endCol);
 
             /*
             int sheetIndex = Workbook.GetSheetIndex(this);
