@@ -39,11 +39,6 @@ namespace NPOI.XSSF.UserModel.Helpers
             sheet = sh;
         }
 
-        public override List<CellRangeAddress> ShiftMergedRegions(int startRow, int startCol, int endRow, int endCol)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void UpdateNamedRanges(FormulaShifter shifter)
         {
         }

@@ -32,7 +32,40 @@ namespace NPOI.SS.UserModel.Helpers
             sheet = sh;
         }
 
-        public abstract List<CellRangeAddress> ShiftMergedRegions(int startRow, int startCol, int endRow, int endCol);
+        public void ShiftUpMergedRegionsOnRowRemoval(int startRow, int startCol, int endRow, int endCol)
+        {
+            int nRowUp = endRow - startRow + 1;
+            ISet<int> removedIndices = new HashSet<int>();
+            List<CellRangeAddress> newMergedRegions = new List<CellRangeAddress>();
+            int size = sheet.NumMergedRegions;
+            for (int i = 0; i < size; i++)
+            {
+                CellRangeAddress merged = sheet.GetMergedRegion(i);
+
+                if(merged.FirstRow > startRow)
+                {
+                    removedIndices.Add(i);
+                    var newMergedRegion = new CellRangeAddress(
+                        merged.FirstRow - nRowUp,
+                        merged.LastRow - nRowUp,
+                        merged.FirstColumn,
+                        merged.LastColumn
+                    );
+                    newMergedRegions.Add(newMergedRegion);
+                }
+            }
+
+            if(removedIndices.Count == 0)
+            {
+                return;
+            }
+
+            sheet.RemoveMergedRegions(removedIndices.ToList());
+            foreach(var cra in newMergedRegions)
+            {
+                sheet.AddMergedRegion(cra);
+            }
+        }
 
         /**
          *  Remove merged regions where it overlaps with a removing cell range.
@@ -45,7 +78,6 @@ namespace NPOI.SS.UserModel.Helpers
         public void RemoveMergedRegions(int startRow, int startCol, int endRow, int endCol)
         {
             ISet<int> removedIndices = new HashSet<int>();
-            //move merged regions completely if they fall within the new region boundaries when they are Shifted
             int size = sheet.NumMergedRegions;
             for (int i = 0; i < size; i++)
             {
