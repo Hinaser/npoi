@@ -141,6 +141,7 @@
     <Compile Include="Util\TestIdentifierManager.cs" />
     <Compile Include="XSSF\Extractor\TestXSSFExcelExtractor.cs" />
     <Compile Include="XSSF\Extractor\TestXSSFExportToXML.cs" />
+    <Compile Include="XSSF\Formula\Functions\TestUnicode.cs" />
     <Compile Include="XSSF\IO\TestLoadSaveXSSF.cs" />
     <Compile Include="XSSF\Model\TestCalculationChain.cs" />
     <Compile Include="XSSF\Model\TestCommentsTable.cs" />

@@ -173,6 +173,7 @@ namespace NPOI.SS.Formula.Atp {
             r(m, "TBILLEQ", null);
             r(m, "TBILLPRICE", null);
             r(m, "TBILLYIELD", null);
+            r(m, "UNICODE", Unicode.instance);
             r(m, "WEEKNUM", WeekNum.instance);
             r(m, "WORKDAY", WorkdayFunction.instance);
             r(m, "XIRR", null);
