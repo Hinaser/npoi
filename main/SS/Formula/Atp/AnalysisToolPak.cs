@@ -186,6 +186,8 @@ namespace NPOI.SS.Formula.Atp
             r(m, "TBILLYIELD", TBillYieldFunction.instance);
             r(m, "TEXTJOIN", TextJoinFunction.instance);
             r(m, "T.INV", TInv.instance);
+            // fork: UNICODE() used by FERB enquete templates
+            r(m, "UNICODE", Unicode.instance);
             r(m, "WEEKNUM", WeekNum.instance);
             r(m, "WORKDAY", WorkdayFunction.instance);
             r(m, "WORKDAY.INTL", WorkdayIntlFunction.instance);
