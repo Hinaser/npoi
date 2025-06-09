@@ -53,14 +53,21 @@ namespace NPOI.SS.Formula.Functions
                 s = OperandResolver.CoerceValueToString(strVE);
             }
 
-            if(s.Length < 1)
+            if (s.Length < 1)
             {
                 return ErrorEval.VALUE_INVALID;
             }
 
-            Int32 codePoint = Char.ConvertToUtf32(s, 0);
-
-            return new NumberEval(codePoint);
+            try
+            {
+                Int32 codePoint = Char.ConvertToUtf32(s, 0);
+                return new NumberEval(codePoint);
+            }
+            catch (ArgumentException)
+            {
+                // 不正なサロゲートペアの場合
+                return ErrorEval.VALUE_INVALID;
+            }
         }
 
         public ValueEval Evaluate(ValueEval[] args, OperationEvaluationContext ec)
