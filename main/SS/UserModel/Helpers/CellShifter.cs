@@ -1,4 +1,4 @@
-﻿/* ====================================================================
+/* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for Additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ namespace NPOI.SS.UserModel.Helpers
         public void ShiftUpMergedRegionsOnRowRemoval(int startRow, int startCol, int endRow, int endCol)
         {
             int nRowUp = endRow - startRow + 1;
-            ISet<int> removedIndices = new HashSet<int>();
+            HashSet<int> removedIndices = new HashSet<int>();
             List<CellRangeAddress> newMergedRegions = new List<CellRangeAddress>();
             int size = sheet.NumMergedRegions;
             for (int i = 0; i < size; i++)
@@ -77,7 +77,7 @@ namespace NPOI.SS.UserModel.Helpers
          */
         public void RemoveMergedRegions(int startRow, int startCol, int endRow, int endCol)
         {
-            ISet<int> removedIndices = new HashSet<int>();
+            HashSet<int> removedIndices = new HashSet<int>();
             int size = sheet.NumMergedRegions;
             for (int i = 0; i < size; i++)
             {

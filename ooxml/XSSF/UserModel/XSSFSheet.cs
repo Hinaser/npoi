@@ -2697,20 +2697,10 @@ namespace NPOI.XSSF.UserModel
         public double GetColumnWidthInPixels(int columnIndex)
         {
             EnsureWorksheetLoaded();
-            // fork: use the non-rounded width so picture sizing keeps sub-unit precision
-            double widthIn256 = GetColumnWidthDouble(columnIndex);
+            double widthIn256 = GetColumnWidth(columnIndex);
             return widthIn256 / 256.0 * Units.DEFAULT_CHARACTER_WIDTH;
         }
 
-        // fork: precision-preserving column width (GetColumnWidth rounds to int 1/256 chars,
-        // which distorts inserted-picture sizing)
-        public double GetColumnWidthDouble(int columnIndex)
-        {
-            EnsureWorksheetLoaded();
-            CT_Col col = columnHelper.GetColumn(columnIndex, false);
-            double width = (col == null || !col.IsSetWidth()) ? this.DefaultColumnWidth : col.width;
-            return width * 256;
-        }
 
         /// <summary>
         /// Gets the size of the margin in inches.
@@ -3900,13 +3890,13 @@ namespace NPOI.XSSF.UserModel
 
                     if(dstRow == null)
                     {
-                        if (!_rows.ContainsKey(newrownum))
+                        if (!_rows.TryGetValue(newrownum, out XSSFRow existingRow))
                         {
                             dstRow = CreateRow(newrownum);
                         }
                         else
                         {
-                            dstRow = _rows[newrownum];
+                            dstRow = existingRow;
                         }
                     }
 

@@ -47,7 +47,7 @@ namespace NPOI.XSSF.UserModel.Helpers
         {
         }
 
-        private void UpdateSheetFormulas(ISheet sh, FormulaShifter Shifter)
+        private static void UpdateSheetFormulas(ISheet sh, FormulaShifter Shifter)
         {
         }
         public override void UpdateRowFormulas(IRow row, FormulaShifter Shifter)

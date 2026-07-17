@@ -46,16 +46,11 @@ namespace TestCases.XSSF.UserModel
             XSSFSheet sheet = wb.GetSheetAt(0) as XSSFSheet;
             sheet.RemoveAndShiftUpCellRange(7, 1, 12, 7);
 
-            WriteToFile(wb);
+            // serialize and re-open: the shifted workbook must stay loadable
+            XSSFWorkbook reloaded = XSSFTestDataSamples.WriteOutAndReadBack(wb);
+            Assert.IsNotNull(reloaded.GetSheetAt(0));
+            reloaded.Close();
             wb.Close();
-        }
-
-        private static void WriteToFile(XSSFWorkbook wb)
-        {
-            using (var fs = File.Create(@"C:\Users\Hinaser\Desktop\bbb.xlsx"))
-            {
-                wb.Write(fs);
-            }
         }
     }
 }

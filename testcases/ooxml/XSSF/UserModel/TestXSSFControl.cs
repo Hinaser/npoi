@@ -43,7 +43,7 @@ namespace TestCases.XSSF.UserModel
             XSSFWorkbook wb = XSSFTestDataSamples.OpenSampleWorkbook("WithControl.xlsx");
             XSSFSheet sheet = (XSSFSheet)wb.GetSheetAt(0);
             
-            List<POIXMLDocumentPart.RelationPart> rels = sheet.RelationParts;
+            IList<POIXMLDocumentPart.RelationPart> rels = sheet.RelationParts;
             Assert.AreEqual(10, rels.Count);
 
             //there should be a relation to this Drawing in the worksheet
